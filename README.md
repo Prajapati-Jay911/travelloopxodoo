@@ -30,7 +30,7 @@
 
 | Resource | Link |
 | :--- | :--- |
-| **🚀 Live Demo** | [View Live Site](https://your-demo-link.com) |
+| **🚀 Live Demo** | [View Live Site](https://travelloopxoddo.vercel.app/) |
 | **📺 Video Walkthrough** | [Watch Demo Video](https://drive.google.com/drive/folders/1aZ8o0ghhVzKtPn4N7K2XS6lHX_p4TZvz?usp=sharing) |
 
 ---

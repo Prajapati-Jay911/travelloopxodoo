@@ -130,4 +130,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+
+---
+
+## 🔑 Demo Accounts
+
+For testing purposes, you can use the following credentials or simply click the **Demo Login** buttons on the Login page:
+
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **User** | `kepler@gmail.com` | `147852369@P` |
+| **Admin** | `admin@gmail.com` | `admin@123` |
+
+---
+
 Developed with ❤️ by the Traveloop Team.

@@ -142,6 +142,29 @@ export default function LoginPage() {
                 >
                   {isSubmitting ? "Logging in..." : "Login"} <Icon name="arrow" className="h-4 w-4" />
                 </button>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("kepler@gmail.com");
+                      setPassword("147852369@P");
+                    }}
+                    className="flex-1 rounded-lg border border-sky-100 bg-sky-50 py-2.5 text-xs font-bold text-sky-700 transition hover:bg-sky-100"
+                  >
+                    Demo User
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail("admin@gmail.com");
+                      setPassword("admin@123");
+                    }}
+                    className="flex-1 rounded-lg border border-orange-100 bg-orange-50 py-2.5 text-xs font-bold text-orange-700 transition hover:bg-orange-100"
+                  >
+                    Demo Admin
+                  </button>
+                </div>
               </form>
 
               <div className="my-7 flex items-center gap-4 text-sm font-semibold text-slate-500">

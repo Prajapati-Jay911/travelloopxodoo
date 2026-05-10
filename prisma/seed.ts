@@ -67,8 +67,48 @@ const activityTemplates = [
   { type: ActivityType.OTHER, name: "Sunset Photo Stop", cost: 8, duration: 75 },
 ];
 
-function imageForCity(city: string) {
-  return `https://source.unsplash.com/1200x800/?${encodeURIComponent(city)},travel`;
+const wikipediaTitles: Record<string, string> = {
+  "New York": "New York City",
+  "Goa": "Goa",
+  "Bali": "Bali",
+  "Hong Kong": "Hong Kong",
+  "Ho Chi Minh City": "Ho Chi Minh City",
+  "Kuala Lumpur": "Kuala Lumpur",
+  "Rio de Janeiro": "Rio de Janeiro",
+  "Buenos Aires": "Buenos Aires",
+  "Mexico City": "Mexico City",
+  "Cape Town": "Cape Town",
+  "Cartagena": "Cartagena, Colombia",
+  "Queenstown": "Queenstown, New Zealand",
+  "Auckland": "Auckland",
+  "Toronto": "Toronto",
+  "Vancouver": "Vancouver",
+  "Cancun": "Cancún",
+  "Cusco": "Cusco",
+  "Santiago": "Santiago",
+};
+
+async function imageForCity(city: string) {
+  const title = wikipediaTitles[city] ?? city;
+  const response = await fetch(
+    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+    {
+      headers: {
+        "User-Agent": "Traveloop/1.0 local seed",
+      },
+    },
+  );
+
+  if (!response.ok) {
+    return null;
+  }
+
+  const data = (await response.json()) as {
+    thumbnail?: { source?: string };
+    originalimage?: { source?: string };
+  };
+
+  return data.thumbnail?.source ?? null;
 }
 
 async function main() {
@@ -103,11 +143,13 @@ async function main() {
   const cityRecords = [];
 
   for (const [name, country, region, costIndex, popularity, flag] of cities) {
+    const imageUrl = await imageForCity(name);
+
     cityRecords.push(
       await prisma.city.upsert({
         where: { name_country: { name, country } },
-        update: { region, costIndex, popularity, flag, imageUrl: imageForCity(name) },
-        create: { name, country, region, costIndex, popularity, flag, imageUrl: imageForCity(name) },
+        update: { region, costIndex, popularity, flag, imageUrl },
+        create: { name, country, region, costIndex, popularity, flag, imageUrl },
       }),
     );
   }
@@ -123,7 +165,7 @@ async function main() {
         cost: Math.max(0, template.cost + (city.costIndex - 50) * 0.4 + templateIndex * 3),
         duration: template.duration,
         description: `A curated ${template.type.toLowerCase()} option in ${city.name}, tuned for itinerary planning and budget previews.`,
-        imageUrl: imageForCity(`${city.name} ${template.name}`),
+        imageUrl: city.imageUrl,
         popularity: Math.max(1, city.popularity - templateIndex * 4),
       })),
     ),

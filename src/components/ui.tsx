@@ -1,7 +1,28 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Destination, Trip } from "@/lib/traveloop-data";
-import { formatCurrency } from "@/lib/traveloop-data";
+import { formatMoney } from "@/lib/client-api";
+
+type CardTrip = {
+  id: string;
+  name: string;
+  image: string;
+  status: string;
+  dates: string;
+  cities: string[];
+  spent: number;
+  budget: number;
+  stops: { id: string }[];
+};
+
+type CardDestination = {
+  city: string;
+  country: string;
+  flag: string;
+  image: string;
+  tag: string;
+  costIndex: number;
+  popularity: number;
+};
 
 type IconName =
   | "dashboard"
@@ -159,7 +180,7 @@ export function ProgressBar({ value }: { value: number }) {
   );
 }
 
-export function TripCard({ trip }: { trip: Trip }) {
+export function TripCard({ trip }: { trip: CardTrip }) {
   const progress = Math.round((trip.spent / trip.budget) * 100);
 
   return (
@@ -216,7 +237,7 @@ export function TripCard({ trip }: { trip: Trip }) {
 export function DestinationCard({
   destination,
 }: {
-  destination: Destination;
+  destination: CardDestination;
 }) {
   return (
     <article className="lift-card min-w-[260px] overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5">
@@ -305,12 +326,12 @@ export function EmptyState({
   );
 }
 
-export function BudgetPill({ trip }: { trip: Trip }) {
+export function BudgetPill({ trip }: { trip: CardTrip }) {
   return (
     <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
       <p className="text-xs text-slate-500">Trip budget</p>
       <p className="mt-1 text-xl font-bold text-slate-950">
-        {formatCurrency(trip.spent)} / {formatCurrency(trip.budget)}
+        {formatMoney(trip.spent)} / {formatMoney(trip.budget)}
       </p>
       <div className="mt-3">
         <ProgressBar value={(trip.spent / trip.budget) * 100} />

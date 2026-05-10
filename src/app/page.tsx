@@ -9,9 +9,18 @@ import Autoplay from "embla-carousel-autoplay";
 import { 
   MapPin, Calendar, Users, Star, Plane, Sun, 
   Search, Sparkles, ChevronRight, Activity, Wallet,
-  Globe, Compass, CheckCircle, ArrowRight
+  Globe, Compass, CheckCircle, ArrowRight, Filter,
+  SlidersHorizontal, ArrowUpDown, LayoutGrid
 } from "lucide-react";
-import { destinations, trips } from "@/lib/traveloop-data";
+import {
+  apiList,
+  formatDateRange,
+  formatMoney,
+  getAuthToken,
+  tripCover,
+  type CityDto,
+  type TripDto,
+} from "@/lib/client-api";
 
 // Images for the hero carousel
 const HERO_IMAGES = [
@@ -104,6 +113,12 @@ function FloatingStatCard({ icon, title, value, delay, className = "" }: { icon:
 export default function PremiumDashboard() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [quoteIndex, setQuoteIndex] = useState(0);
+  const [destinations, setDestinations] = useState<CityDto[]>([]);
+  const [trips, setTrips] = useState<TripDto[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState("Popularity");
+  const [groupBy, setGroupBy] = useState("None");
+  const [filterCategory, setFilterCategory] = useState("All");
 
   // Embla carousels
   const [destRef] = useEmblaCarousel({ loop: true, align: "start" }, [Autoplay({ delay: 3000 })]);
@@ -120,6 +135,28 @@ export default function PremiumDashboard() {
       clearInterval(imgInterval);
       clearInterval(quoteInterval);
     };
+  }, []);
+
+  useEffect(() => {
+    void apiList<CityDto>("/api/cities?limit=6&featured=true")
+      .then((result) => {
+        setDestinations(result.data);
+      })
+      .catch(() => {
+        setDestinations([]);
+      });
+
+    if (!getAuthToken()) {
+      return;
+    }
+
+    void apiList<TripDto>("/api/trips?limit=2&sortBy=newest")
+      .then((result) => {
+        setTrips(result.data);
+      })
+      .catch(() => {
+        setTrips([]);
+      });
   }, []);
 
   return (
@@ -149,6 +186,7 @@ export default function PremiumDashboard() {
               fill
               className="object-cover"
               priority
+              sizes="100vw"
             />
           </motion.div>
         </AnimatePresence>
@@ -262,12 +300,11 @@ export default function PremiumDashboard() {
 
             {/* Right side: Floating Cards */}
             <div className="hidden h-full min-h-[500px] w-full relative lg:block">
-              {/* Weather Chip */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
-                className="absolute right-10 top-10 flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md"
+                className="absolute right-10 top-6 flex items-center gap-3 rounded-full border border-white/10 bg-white/5 px-4 py-2 backdrop-blur-md"
               >
                 <Sun className="h-5 w-5 text-amber-400" />
                 <span className="text-sm font-medium text-white">Tokyo • 21°C • Clear Sky</span>
@@ -278,28 +315,28 @@ export default function PremiumDashboard() {
                 value="124+"
                 icon={<Globe className="h-6 w-6 text-cyan-400" />}
                 delay={0.2}
-                className="top-32 right-12 w-64"
+                className="top-24 right-48 w-64"
               />
               <FloatingStatCard
                 title="Trips Planned"
                 value="2.4K"
                 icon={<CheckCircle className="h-6 w-6 text-emerald-400" />}
                 delay={0.5}
-                className="top-64 right-32 w-64"
+                className="top-[200px] right-12 w-64"
               />
               <FloatingStatCard
                 title="Smart Budget Tracking"
                 value="Active"
                 icon={<Wallet className="h-6 w-6 text-amber-400" />}
                 delay={0.8}
-                className="bottom-32 right-10 w-72"
+                className="top-[320px] right-40 w-72"
               />
               <FloatingStatCard
                 title="AI Recommendations"
                 value="Personalized"
                 icon={<Sparkles className="h-6 w-6 text-blue-400" />}
                 delay={1.1}
-                className="bottom-10 right-40 w-64"
+                className="top-[440px] right-8 w-64"
               />
             </div>
           </div>
@@ -314,18 +351,108 @@ export default function PremiumDashboard() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="mx-auto max-w-4xl rounded-full border border-sky-100 bg-white/80 p-2 shadow-xl shadow-sky-900/5 backdrop-blur-xl"
+          className="mx-auto max-w-4xl"
         >
-          <div className="flex items-center gap-3 px-4">
-            <Search className="h-6 w-6 text-cyan-500" />
-            <input
-              type="text"
-              placeholder="Search cities, countries, activities..."
-              className="h-14 w-full bg-transparent text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
-            />
-            <button className="rounded-full bg-cyan-500 px-8 py-3 font-bold text-white transition-transform hover:scale-105 shadow-sm shadow-cyan-200">
-              Search
-            </button>
+          <div className="rounded-[32px] border border-sky-100 bg-white/80 p-2 shadow-xl shadow-sky-900/5 backdrop-blur-xl">
+            <div className="flex items-center gap-3 px-4">
+              <Search className="h-6 w-6 text-cyan-500" />
+              <input
+                type="text"
+                placeholder="Search cities, countries, activities..."
+                className="h-14 w-full bg-transparent text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
+              />
+              
+              <div className="hidden items-center gap-2 border-l border-slate-100 pl-4 mr-2 md:flex">
+                <button 
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition-all ${
+                    isFilterOpen ? "bg-cyan-500 text-white shadow-lg shadow-cyan-200" : "text-slate-500 hover:bg-slate-50"
+                  }`}
+                >
+                  <SlidersHorizontal className="h-4 w-4" />
+                  Filters
+                </button>
+              </div>
+
+              <button className="rounded-full bg-cyan-500 px-8 py-3 font-bold text-white transition-transform hover:scale-105 shadow-sm shadow-cyan-200">
+                Search
+              </button>
+            </div>
+
+            {/* Filter Panel */}
+            <AnimatePresence>
+              {isFilterOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-1 gap-6 border-t border-slate-100 p-6 md:grid-cols-3">
+                    {/* Sort By */}
+                    <div>
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        <ArrowUpDown className="h-3 w-3" /> Sort By
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {["Popularity", "Price: Low", "Price: High", "Name"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setSortBy(opt)}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                              sortBy === opt ? "bg-cyan-50 text-cyan-600 ring-1 ring-cyan-200" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Group By */}
+                    <div>
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        <LayoutGrid className="h-3 w-3" /> Group By
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {["None", "Region", "Country", "Cost"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setGroupBy(opt)}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                              groupBy === opt ? "bg-blue-50 text-blue-600 ring-1 ring-blue-200" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Filter Category */}
+                    <div>
+                      <p className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
+                        <Filter className="h-3 w-3" /> Filter By
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {["All", "Beach", "Mountain", "City", "Culture"].map((opt) => (
+                          <button
+                            key={opt}
+                            onClick={() => setFilterCategory(opt)}
+                            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition-all ${
+                              filterCategory === opt ? "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200" : "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </motion.div>
 
@@ -351,10 +478,11 @@ export default function PremiumDashboard() {
                     className="group relative aspect-[4/5] overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5"
                   >
                     <Image
-                      src={dest.image}
-                      alt={dest.city}
+                      src={dest.imageUrl || "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=80"}
+                      alt={dest.name}
                       fill
                       className="object-cover transition-transform duration-700 group-hover:scale-110"
+                      sizes="(max-width: 768px) 100vw, 33vw"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#020817] via-[#020817]/40 to-transparent opacity-80" />
                     
@@ -367,9 +495,9 @@ export default function PremiumDashboard() {
 
                     <div className="absolute bottom-0 left-0 right-0 p-6">
                       <p className="mb-2 inline-block rounded-full bg-cyan-500/20 px-3 py-1 text-xs font-bold text-cyan-300 backdrop-blur-sm">
-                        {dest.tag}
+                        {dest.region}
                       </p>
-                      <h3 className="text-2xl font-black text-white">{dest.city}</h3>
+                      <h3 className="text-2xl font-black text-white">{dest.name}</h3>
                       <div className="mt-2 flex items-center justify-between">
                         <div className="flex items-center gap-1.5 text-sm text-white/60">
                           <MapPin className="h-4 w-4" /> {dest.country}
@@ -396,7 +524,10 @@ export default function PremiumDashboard() {
             
             <div className="grid gap-6">
               {trips.slice(0, 2).map((trip) => {
-                const progress = Math.round((trip.spent / trip.budget) * 100);
+                const budget = trip.budget?.totalAllocated || 1;
+                const spent = trip.totalCost ?? 0;
+                const progress = Math.round((spent / budget) * 100);
+                const cover = tripCover(trip) || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80";
                 return (
                   <motion.div
                     key={trip.id}
@@ -405,10 +536,11 @@ export default function PremiumDashboard() {
                   >
                     <div className="relative h-48 w-full sm:w-64 shrink-0 overflow-hidden rounded-2xl">
                       <Image
-                        src={trip.image}
+                        src={cover}
                         alt={trip.name}
                         fill
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, 256px"
                       />
                     </div>
                     <div className="flex flex-1 flex-col justify-between py-2">
@@ -416,15 +548,15 @@ export default function PremiumDashboard() {
                         <div className="flex items-center justify-between">
                           <h3 className="text-2xl font-black text-slate-900">{trip.name}</h3>
                           <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-600">
-                            {trip.status}
+                            {(trip.stopCount ?? 0) > 0 ? "Active" : "Draft"}
                           </span>
                         </div>
                         <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-sky-500" /> {trip.dates}
+                            <Calendar className="h-4 w-4 text-sky-500" /> {formatDateRange(trip.startDate, trip.endDate)}
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Users className="h-4 w-4 text-sky-500" /> {trip.cities.length} Cities
+                            <Users className="h-4 w-4 text-sky-500" /> {trip.stopCount ?? 0} Cities
                           </div>
                         </div>
                       </div>
@@ -432,7 +564,9 @@ export default function PremiumDashboard() {
                       <div className="mt-6">
                         <div className="mb-2 flex items-center justify-between text-sm">
                           <span className="text-slate-500">Budget Planner</span>
-                          <span className="font-bold text-slate-900">{progress}% Funded</span>
+                          <span className="font-bold text-slate-900">
+                            {formatMoney(spent)} / {formatMoney(budget)}
+                          </span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-sky-100">
                           <motion.div 
@@ -460,19 +594,19 @@ export default function PremiumDashboard() {
             <div className="flex flex-col gap-6">
               {[
                 {
-                  title: "Kyoto Temple Trail",
-                  type: "Activity",
-                  desc: "Based on your interest in culture. Best visited early morning to avoid crowds.",
-                  tip: "Save 20% by booking a 3-day transit pass.",
-                  icon: <Compass className="h-5 w-5 text-amber-400" />
+                  title: "Create or open a trip",
+                  type: "Next Step",
+                  desc: "Recommendations appear after your trip data and stops are available.",
+                  tip: "Add destinations and activities to unlock smarter suggestions.",
+                  icon: <Compass className="h-5 w-5 text-amber-400" />,
                 },
                 {
-                  title: "Swiss Alps Express",
-                  type: "Itinerary",
-                  desc: "A scenic train route tailored to your love for mountain landscapes.",
-                  tip: "Off-peak travel next month will save you $150.",
-                  icon: <Activity className="h-5 w-5 text-emerald-400" />
-                }
+                  title: "Use Explore filters",
+                  type: "Discovery",
+                  desc: "Search destinations and activity catalog data from the live API.",
+                  tip: "Filter by activity type to narrow options quickly.",
+                  icon: <Activity className="h-5 w-5 text-emerald-400" />,
+                },
               ].map((rec, i) => (
                 <motion.div
                   key={i}

@@ -1,17 +1,51 @@
+"use client";
+
+import { FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopNav } from "@/components/app-shell";
 import { Icon } from "@/components/ui";
+import { apiFetch, storeAuth, type AuthPayload } from "@/lib/client-api";
 
 export default function SignupPage() {
-  const fields = [
-    "First name",
-    "Last name",
-    "Email address",
-    "Phone number",
-    "City",
-    "Country",
-  ];
+  const router = useRouter();
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    phone: "",
+    city: "",
+    country: "",
+    bio: "",
+  });
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  function updateField(field: keyof typeof form, value: string) {
+    setForm((current) => ({ ...current, [field]: value }));
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const payload = await apiFetch<AuthPayload>("/api/auth/register", {
+        method: "POST",
+        body: JSON.stringify(form),
+      });
+      storeAuth(payload);
+      router.push("/trips/new");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to create account");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_48%,#fff7ed_100%)] text-slate-900">
@@ -70,38 +104,114 @@ export default function SignupPage() {
                 </h2>
               </div>
 
-              <form className="grid gap-4 md:grid-cols-2">
-                {fields.map((field) => (
-                  <label
-                    key={field}
-                    className="block text-sm font-bold text-slate-700"
-                  >
-                    {field}
-                    <input
-                      aria-label={field}
-                      type={field.includes("Email") ? "email" : "text"}
-                      className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
-                      placeholder={field}
-                    />
-                  </label>
-                ))}
+              <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
+                <label className="block text-sm font-bold text-slate-700">
+                  First name
+                  <input
+                    aria-label="First name"
+                    type="text"
+                    value={form.firstName}
+                    onChange={(event) => updateField("firstName", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="First name"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  Last name
+                  <input
+                    aria-label="Last name"
+                    type="text"
+                    value={form.lastName}
+                    onChange={(event) => updateField("lastName", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="Last name"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  Email address
+                  <input
+                    aria-label="Email address"
+                    type="email"
+                    value={form.email}
+                    onChange={(event) => updateField("email", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="Email address"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  Password
+                  <input
+                    aria-label="Password"
+                    type="password"
+                    value={form.password}
+                    onChange={(event) => updateField("password", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="At least 8 chars with a number"
+                    required
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  Phone number
+                  <input
+                    aria-label="Phone number"
+                    type="text"
+                    value={form.phone}
+                    onChange={(event) => updateField("phone", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="Phone number"
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  City
+                  <input
+                    aria-label="City"
+                    type="text"
+                    value={form.city}
+                    onChange={(event) => updateField("city", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="City"
+                  />
+                </label>
+                <label className="block text-sm font-bold text-slate-700">
+                  Country
+                  <input
+                    aria-label="Country"
+                    type="text"
+                    value={form.country}
+                    onChange={(event) => updateField("country", event.target.value)}
+                    className="mt-2 h-12 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                    placeholder="Country"
+                  />
+                </label>
 
                 <label className="block text-sm font-bold text-slate-700 md:col-span-2">
                   Additional information
                   <textarea
                     aria-label="Additional information"
                     rows={5}
+                    value={form.bio}
+                    onChange={(event) => updateField("bio", event.target.value)}
                     className="mt-2 w-full resize-none rounded-xl border border-sky-100 bg-white px-4 py-3 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
-                    placeholder="Additional information ..."
+                    placeholder="Travel preferences, bio, special requirements ..."
                   />
                 </label>
 
-                <Link
-                  href="/"
-                  className="md:col-span-2 flex h-13 items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d]"
+                {error && (
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 md:col-span-2">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="md:col-span-2 flex h-13 items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Register Users <Icon name="arrow" className="h-4 w-4" />
-                </Link>
+                  {isSubmitting ? "Creating account..." : "Register User"} <Icon name="arrow" className="h-4 w-4" />
+                </button>
               </form>
 
               <div className="mt-7 border-t border-sky-100 pt-6 text-center">

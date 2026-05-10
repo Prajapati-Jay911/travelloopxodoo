@@ -1,9 +1,40 @@
+"use client";
+
+import { FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { TopNav } from "@/components/app-shell";
 import { Icon } from "@/components/ui";
+import { apiFetch, storeAuth, type AuthPayload } from "@/lib/client-api";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const payload = await apiFetch<AuthPayload>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+      storeAuth(payload);
+      router.push("/trips");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to log in");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_48%,#fff7ed_100%)] text-slate-900">
       <TopNav active="Dashboard" />
@@ -52,13 +83,16 @@ export default function LoginPage() {
                 <Icon name="profile" className="h-10 w-10 text-sky-500" />
               </div>
 
-              <form className="space-y-5">
+              <form className="space-y-5" onSubmit={handleSubmit}>
                 <label className="block text-sm font-bold text-slate-700">
-                  Username
+                  Email
                   <input
-                    aria-label="Username"
-                    type="text"
-                    placeholder="Enter username"
+                    aria-label="Email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="you@example.com"
+                    required
                     className="mt-2 h-13 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
                   />
                 </label>
@@ -68,7 +102,10 @@ export default function LoginPage() {
                   <input
                     aria-label="Password"
                     type="password"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     placeholder="Enter password"
+                    required
                     className="mt-2 h-13 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
                   />
                 </label>
@@ -79,31 +116,30 @@ export default function LoginPage() {
                     Remember me
                   </label>
                   <Link href="/signup" className="font-bold text-sky-600">
-                    Forgot password?
+                    Create account
                   </Link>
                 </div>
 
-                <Link
-                  href="/"
-                  className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d]"
+                {error && (
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Login <Icon name="arrow" className="h-4 w-4" />
-                </Link>
+                  {isSubmitting ? "Logging in..." : "Login"} <Icon name="arrow" className="h-4 w-4" />
+                </button>
               </form>
 
               <div className="my-7 flex items-center gap-4 text-sm font-semibold text-slate-500">
                 <span className="h-px flex-1 bg-sky-100" />
-                or
+                secure JWT session
                 <span className="h-px flex-1 bg-sky-100" />
               </div>
-
-              <button
-                type="button"
-                className="flex h-13 w-full items-center justify-center gap-3 rounded-xl border border-sky-100 bg-white text-sm font-bold text-slate-700 shadow-sm shadow-sky-100"
-              >
-                <span className="text-lg font-black text-[#4285f4]">G</span>
-                Sign in with Google
-              </button>
 
               <div className="mt-7 border-t border-sky-100 pt-6 text-center">
                 <p className="text-sm font-medium text-slate-600">

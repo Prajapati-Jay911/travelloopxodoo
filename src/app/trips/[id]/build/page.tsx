@@ -61,11 +61,39 @@ export default function ItineraryBuilderPage({
   );
 
   const catalogForActiveCity = useMemo(() => {
-    if (!activeStop) {
-      return catalog.slice(0, 6);
+    // Group activities by type for variety
+    const grouped = new Map<string, ActivityDto[]>();
+    catalog.forEach(item => {
+      const list = grouped.get(item.type) ?? [];
+      list.push(item);
+      grouped.set(item.type, list);
+    });
+
+    const result: ActivityDto[] = [];
+    const activeCityId = activeStop?.cityId;
+
+    // 1. Pick one from each type in active city
+    Array.from(grouped.keys()).forEach(type => {
+      const cityMatches = grouped.get(type)?.filter(a => a.city?.id === activeCityId) ?? [];
+      if (cityMatches.length > 0) result.push(cityMatches[0]);
+    });
+
+    // 2. If we need more, pick from active city even if type repeated
+    if (result.length < 8) {
+      const remainingCityMatches = catalog.filter(a => a.city?.id === activeCityId && !result.find(r => r.id === a.id));
+      result.push(...remainingCityMatches.slice(0, 8 - result.length));
     }
 
-    return catalog.filter((activity) => activity.city?.id === activeStop.cityId).slice(0, 6);
+    // 3. If still need more, pick from other cities (diversity)
+    if (result.length < 12) {
+      Array.from(grouped.keys()).forEach(type => {
+        if (result.length >= 12) return;
+        const others = grouped.get(type)?.filter(a => a.city?.id !== activeCityId && !result.find(r => r.id === a.id)) ?? [];
+        if (others.length > 0) result.push(others[0]);
+      });
+    }
+
+    return result.slice(0, 12);
   }, [activeStop, catalog]);
 
   const loadTrip = useCallback(async () => {
@@ -286,36 +314,55 @@ export default function ItineraryBuilderPage({
           <aside className="space-y-4">
             <form onSubmit={createStop} className="rounded-2xl border border-sky-100 bg-white p-5 shadow-xl shadow-sky-900/5">
               <h2 className="text-lg font-black text-slate-950">Add stop</h2>
-              <div className="mt-4 space-y-3">
-                <select
-                  aria-label="City"
-                  value={stopForm.cityId}
-                  onChange={(event) => setStopForm((current) => ({ ...current, cityId: event.target.value }))}
-                  required
-                  className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-700"
-                >
-                  <option value="">Choose city</option>
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.id}>{city.flag} {city.name}, {city.country}</option>
-                  ))}
-                </select>
-                <input
-                  aria-label="Stop start date"
-                  type="date"
-                  value={stopForm.startDate}
-                  onChange={(event) => setStopForm((current) => ({ ...current, startDate: event.target.value }))}
-                  required
-                  className="h-11 w-full rounded-xl border border-sky-100 px-3 text-sm text-slate-700"
-                />
-                <input
-                  aria-label="Stop end date"
-                  type="date"
-                  value={stopForm.endDate}
-                  onChange={(event) => setStopForm((current) => ({ ...current, endDate: event.target.value }))}
-                  required
-                  className="h-11 w-full rounded-xl border border-sky-100 px-3 text-sm text-slate-700"
-                />
-                <button disabled={isSaving} type="submit" className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black text-white shadow-lg shadow-orange-200 disabled:opacity-60">
+              <div className="mt-4 space-y-4">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <Icon name="search" className="h-3 w-3" />
+                    Destination
+                  </div>
+                  <select
+                    value={stopForm.cityId}
+                    onChange={(event) => setStopForm((current) => ({ ...current, cityId: event.target.value }))}
+                    required
+                    className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-700 focus:border-sky-300 focus:outline-none"
+                  >
+                    <option value="">Choose city</option>
+                    {cities.map((city) => (
+                      <option key={city.id} value={city.id}>{city.flag} {city.name}, {city.country}</option>
+                    ))}
+                  </select>
+                </label>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Icon name="calendar" className="h-3 w-3" />
+                      Arrival
+                    </div>
+                    <input
+                      type="date"
+                      value={stopForm.startDate}
+                      onChange={(event) => setStopForm((current) => ({ ...current, startDate: event.target.value }))}
+                      required
+                      className="h-11 w-full rounded-xl border border-sky-100 px-3 text-sm text-slate-700 focus:border-sky-300 focus:outline-none"
+                    />
+                  </label>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <Icon name="calendar" className="h-3 w-3" />
+                      Departure
+                    </div>
+                    <input
+                      type="date"
+                      value={stopForm.endDate}
+                      onChange={(event) => setStopForm((current) => ({ ...current, endDate: event.target.value }))}
+                      required
+                      className="h-11 w-full rounded-xl border border-sky-100 px-3 text-sm text-slate-700 focus:border-sky-300 focus:outline-none"
+                    />
+                  </label>
+                </div>
+
+                <button disabled={isSaving} type="submit" className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d] active:scale-95 disabled:opacity-60">
                   <Icon name="plus" className="h-4 w-4" /> Add stop
                 </button>
               </div>
@@ -369,17 +416,102 @@ export default function ItineraryBuilderPage({
                     </div>
                   </div>
 
-                  <div className="p-5">
-                    <form onSubmit={createActivity} className="grid gap-3 rounded-2xl border border-sky-100 bg-sky-50 p-4 md:grid-cols-2">
-                      <input aria-label="Activity name" value={activityForm.name} onChange={(event) => updateActivityField("name", event.target.value)} required placeholder="Activity name" className="h-11 rounded-xl border border-sky-100 px-3 text-sm" />
-                      <select aria-label="Activity type" value={activityForm.type} onChange={(event) => updateActivityField("type", event.target.value)} className="h-11 rounded-xl border border-sky-100 px-3 text-sm">
-                        {activityTypes.map((type) => <option key={type} value={type}>{type}</option>)}
-                      </select>
-                      <input aria-label="Activity cost" type="number" min="0" value={activityForm.cost} onChange={(event) => updateActivityField("cost", event.target.value)} className="h-11 rounded-xl border border-sky-100 px-3 text-sm" />
-                      <input aria-label="Activity duration" type="number" min="1" value={activityForm.duration} onChange={(event) => updateActivityField("duration", event.target.value)} className="h-11 rounded-xl border border-sky-100 px-3 text-sm" />
-                      <input aria-label="Activity start time" type="time" value={activityForm.startTime} onChange={(event) => updateActivityField("startTime", event.target.value)} className="h-11 rounded-xl border border-sky-100 px-3 text-sm" />
-                      <button disabled={isSaving} type="submit" className="h-11 rounded-xl bg-[#ff5a3d] text-sm font-black text-white shadow-lg shadow-orange-200 disabled:opacity-60">Add activity</button>
-                      <textarea aria-label="Activity description" value={activityForm.description} onChange={(event) => updateActivityField("description", event.target.value)} placeholder="Description" rows={3} className="rounded-xl border border-sky-100 px-3 py-2 text-sm md:col-span-2" />
+                  <div className="p-6">
+                    <form onSubmit={createActivity} className="grid gap-4 rounded-2xl border border-sky-100 bg-sky-50/50 p-5 shadow-inner">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon name="search" className="h-3 w-3" />
+                            Activity Name
+                          </div>
+                          <input 
+                            value={activityForm.name} 
+                            onChange={(event) => updateActivityField("name", event.target.value)} 
+                            required 
+                            placeholder="e.g. Louvre Museum" 
+                            className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none" 
+                          />
+                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon name="dashboard" className="h-3 w-3" />
+                            Type
+                          </div>
+                          <select 
+                            value={activityForm.type} 
+                            onChange={(event) => updateActivityField("type", event.target.value)} 
+                            className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none"
+                          >
+                            {activityTypes.map((type) => <option key={type} value={type}>{type}</option>)}
+                          </select>
+                        </label>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon name="budget" className="h-3 w-3" />
+                            Cost ($)
+                          </div>
+                          <input 
+                            type="number" 
+                            min="0" 
+                            value={activityForm.cost} 
+                            onChange={(event) => updateActivityField("cost", event.target.value)} 
+                            placeholder="0" 
+                            className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none" 
+                          />
+                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon name="calendar" className="h-3 w-3" />
+                            Duration (min)
+                          </div>
+                          <input 
+                            type="number" 
+                            min="1" 
+                            value={activityForm.duration} 
+                            onChange={(event) => updateActivityField("duration", event.target.value)} 
+                            placeholder="60" 
+                            className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none" 
+                          />
+                        </label>
+                        <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                          <div className="flex items-center gap-1.5 mb-1.5">
+                            <Icon name="dashboard" className="h-3 w-3" />
+                            Start Time
+                          </div>
+                          <input 
+                            type="time" 
+                            value={activityForm.startTime} 
+                            onChange={(event) => updateActivityField("startTime", event.target.value)} 
+                            className="h-11 w-full rounded-xl border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none" 
+                          />
+                        </label>
+                      </div>
+
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <Icon name="notes" className="h-3 w-3" />
+                          Description
+                        </div>
+                        <textarea 
+                          value={activityForm.description} 
+                          onChange={(event) => updateActivityField("description", event.target.value)} 
+                          placeholder="What will you do? (optional)" 
+                          rows={3} 
+                          className="w-full resize-none rounded-xl border border-sky-100 bg-white px-3 py-2 text-sm font-semibold text-slate-900 focus:border-sky-300 focus:outline-none" 
+                        />
+                      </label>
+
+                      <button 
+                        disabled={isSaving} 
+                        type="submit" 
+                        className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-200 transition hover:bg-[#f04a2d] active:scale-95 disabled:opacity-60"
+                      >
+                        <Icon name="plus" className="h-5 w-5" />
+                        Add activity
+                      </button>
                     </form>
 
                     <div className="mt-5 space-y-3">
@@ -409,15 +541,36 @@ export default function ItineraryBuilderPage({
                 </div>
 
                 <section className="rounded-2xl border border-sky-100 bg-white p-5 shadow-xl shadow-sky-900/5">
-                  <h2 className="text-lg font-black text-slate-950">Catalog suggestions</h2>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-black text-slate-950">Catalog suggestions</h2>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Recommended for you</span>
+                  </div>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {catalogForActiveCity.length === 0 ? (
-                      <p className="text-sm text-slate-500">No catalog suggestions for this city yet.</p>
+                      <p className="text-sm text-slate-500 py-8 text-center sm:col-span-2 lg:col-span-3">No catalog suggestions available yet.</p>
                     ) : catalogForActiveCity.map((activity) => (
-                      <button key={activity.id} type="button" onClick={() => void addCatalogActivity(activity)} className="rounded-xl border border-sky-100 bg-sky-50 p-4 text-left hover:border-sky-300">
-                        <p className="font-black text-slate-950">{activity.name}</p>
-                        <p className="mt-1 text-xs font-bold text-sky-600">{activity.type} · {formatMoney(activity.cost)} · {activity.duration} min</p>
-                        <p className="mt-2 line-clamp-2 text-sm text-slate-500">{activity.description}</p>
+                      <button 
+                        key={activity.id} 
+                        type="button" 
+                        onClick={() => void addCatalogActivity(activity)} 
+                        className="group flex flex-col rounded-2xl border border-sky-50 bg-sky-50/30 p-4 text-left transition-all hover:border-sky-300 hover:bg-white hover:shadow-lg hover:shadow-sky-900/5 active:scale-95"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-sky-600">
+                            {activity.type}
+                          </span>
+                          <span className="font-black text-slate-950 text-sm">{formatMoney(activity.cost)}</span>
+                        </div>
+                        <p className="mt-3 font-black text-slate-950 leading-tight group-hover:text-sky-600 transition-colors">{activity.name}</p>
+                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-slate-400">
+                          <span className="flex items-center gap-1"><Icon name="trips" className="h-2.5 w-2.5" /> {activity.city?.name}</span>
+                          <span>·</span>
+                          <span className="flex items-center gap-1"><Icon name="calendar" className="h-2.5 w-2.5" /> {activity.duration} min</span>
+                        </div>
+                        <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-slate-500">{activity.description}</p>
+                        <div className="mt-4 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-[#ff5a3d] opacity-0 group-hover:opacity-100 transition-opacity">
+                          Add to itinerary <Icon name="plus" className="h-2.5 w-2.5" />
+                        </div>
                       </button>
                     ))}
                   </div>

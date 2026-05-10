@@ -10,13 +10,15 @@ import {
   MapPin, Calendar, Users, Star, Plane, Sun, 
   Search, Sparkles, ChevronRight, Activity, Wallet,
   Globe, Compass, CheckCircle, ArrowRight, Filter,
-  SlidersHorizontal, ArrowUpDown, LayoutGrid
+  SlidersHorizontal, ArrowUpDown, LayoutGrid, Lightbulb
 } from "lucide-react";
 import {
+  apiFetch,
   apiList,
   formatDateRange,
   formatMoney,
   getAuthToken,
+  getStoredUser,
   tripCover,
   type CityDto,
   type TripDto,
@@ -40,7 +42,16 @@ const QUOTES = [
 
 // --- Subcomponents ---
 
-function DashboardNav() {
+function DashboardNav({ isLoggedIn }: { isLoggedIn: boolean }) {
+
+  const handleLogout = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem("traveloop_token");
+      window.localStorage.removeItem("traveloop_user");
+      window.location.reload();
+    }
+  };
+
   const navItems = [
     { href: "/", label: "Dashboard" },
     { href: "/explore", label: "Explore" },
@@ -48,8 +59,11 @@ function DashboardNav() {
     { href: "/community", label: "Community" },
     { href: "/billing", label: "Billing" },
     { href: "/profile", label: "Profile" },
-    { href: "/admin", label: "Admin" },
   ];
+
+  if (isLoggedIn && getStoredUser()?.role === "ADMIN") {
+    navItems.push({ href: "/admin", label: "Admin" });
+  }
 
   return (
     <header className="absolute left-0 right-0 top-0 z-50 px-4 py-6 md:px-8">
@@ -75,12 +89,29 @@ function DashboardNav() {
             </Link>
           ))}
         </nav>
-        <Link
-          href="/login"
-          className="hidden h-10 items-center rounded-full bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:flex"
-        >
-          Login
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link 
+            href="/search"
+            className="grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white backdrop-blur-md transition-all hover:bg-white/20 hover:scale-110"
+          >
+            <Search className="h-5 w-5" />
+          </Link>
+          {isLoggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="hidden h-10 items-center rounded-full bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:flex"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="hidden h-10 items-center rounded-full bg-white/10 px-5 text-sm font-bold text-white backdrop-blur-md transition-colors hover:bg-white/20 sm:flex"
+            >
+              Login
+            </Link>
+          )}
+        </div>
       </div>
     </header>
   );
@@ -115,10 +146,20 @@ export default function PremiumDashboard() {
   const [quoteIndex, setQuoteIndex] = useState(0);
   const [destinations, setDestinations] = useState<CityDto[]>([]);
   const [trips, setTrips] = useState<TripDto[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [tips, setTips] = useState<TravelTip[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("Popularity");
   const [groupBy, setGroupBy] = useState("None");
   const [filterCategory, setFilterCategory] = useState("All");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoggedIn(Boolean(getAuthToken()));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Embla carousels
   const [destRef] = useEmblaCarousel({ loop: true, align: "start" }, [Autoplay({ delay: 3000 })]);
@@ -146,6 +187,14 @@ export default function PremiumDashboard() {
         setDestinations([]);
       });
 
+    void apiFetch<DashboardStats>("/api/stats")
+      .then((res) => setStats(res))
+      .catch(() => setStats(null));
+
+    void apiFetch<TravelTip[]>("/api/tips")
+      .then((res) => setTips(res || []))
+      .catch(() => setTips([]));
+
     if (!getAuthToken()) {
       return;
     }
@@ -167,7 +216,7 @@ export default function PremiumDashboard() {
           50% { transform: translateY(-10px); }
         }
       `}} />
-      <DashboardNav />
+      <DashboardNav isLoggedIn={isLoggedIn} />
 
       {/* --- HERO SECTION --- */}
       <section className="relative min-h-[95vh] w-full overflow-hidden rounded-b-[40px] shadow-2xl shadow-cyan-900/20">
@@ -256,7 +305,7 @@ export default function PremiumDashboard() {
               </h1>
               
               <p className="mt-6 text-xl font-medium text-white/90">
-                Good Evening, Hiral 👋
+                {isLoggedIn && getStoredUser() ? `Good Evening, ${getStoredUser()?.firstName} 👋` : "Good Evening, Explorer 👋"}
               </p>
               
               <p className="mt-4 max-w-lg text-lg leading-relaxed text-white/60">
@@ -274,10 +323,10 @@ export default function PremiumDashboard() {
                   <div className="absolute inset-0 z-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 transition-opacity group-hover:opacity-100" />
                 </Link>
                 <Link
-                  href="/explore"
+                  href="/search"
                   className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/10 hover:text-cyan-300"
                 >
-                  Explore Destinations <ChevronRight className="h-4 w-4" />
+                  <Search className="h-4 w-4" /> Search Ideas <ChevronRight className="h-4 w-4" />
                 </Link>
               </div>
 
@@ -312,17 +361,24 @@ export default function PremiumDashboard() {
 
               <FloatingStatCard
                 title="Destinations"
-                value="124+"
+                value={stats ? `${stats.cities}+` : "124+"}
                 icon={<Globe className="h-6 w-6 text-cyan-400" />}
                 delay={0.2}
                 className="top-24 right-48 w-64"
               />
               <FloatingStatCard
                 title="Trips Planned"
-                value="2.4K"
+                value={stats ? `${(stats.trips / 1000).toFixed(1)}K` : "2.4K"}
                 icon={<CheckCircle className="h-6 w-6 text-emerald-400" />}
                 delay={0.5}
                 className="top-[200px] right-12 w-64"
+              />
+              <FloatingStatCard
+                title="Activities Curated"
+                value={stats ? `${stats.activities}` : "500+"}
+                icon={<Activity className="h-6 w-6 text-blue-400" />}
+                delay={1.1}
+                className="top-[440px] right-8 w-64"
               />
               <FloatingStatCard
                 title="Smart Budget Tracking"
@@ -330,13 +386,6 @@ export default function PremiumDashboard() {
                 icon={<Wallet className="h-6 w-6 text-amber-400" />}
                 delay={0.8}
                 className="top-[320px] right-40 w-72"
-              />
-              <FloatingStatCard
-                title="AI Recommendations"
-                value="Personalized"
-                icon={<Sparkles className="h-6 w-6 text-blue-400" />}
-                delay={1.1}
-                className="top-[440px] right-8 w-64"
               />
             </div>
           </div>
@@ -353,10 +402,18 @@ export default function PremiumDashboard() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mx-auto max-w-4xl"
         >
-          <div className="rounded-[32px] border border-sky-100 bg-white/80 p-2 shadow-xl shadow-sky-900/5 backdrop-blur-xl">
+          <form 
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement).value;
+              window.location.href = `/search?q=${encodeURIComponent(q)}`;
+            }}
+            className="rounded-[32px] border border-sky-100 bg-white/80 p-2 shadow-xl shadow-sky-900/5 backdrop-blur-xl"
+          >
             <div className="flex items-center gap-3 px-4">
               <Search className="h-6 w-6 text-cyan-500" />
               <input
+                name="q"
                 type="text"
                 placeholder="Search cities, countries, activities..."
                 className="h-14 w-full bg-transparent text-lg font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none"
@@ -364,6 +421,7 @@ export default function PremiumDashboard() {
               
               <div className="hidden items-center gap-2 border-l border-slate-100 pl-4 mr-2 md:flex">
                 <button 
+                  type="button"
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition-all ${
                     isFilterOpen ? "bg-cyan-500 text-white shadow-lg shadow-cyan-200" : "text-slate-500 hover:bg-slate-50"
@@ -374,7 +432,7 @@ export default function PremiumDashboard() {
                 </button>
               </div>
 
-              <button className="rounded-full bg-cyan-500 px-8 py-3 font-bold text-white transition-transform hover:scale-105 shadow-sm shadow-cyan-200">
+              <button type="submit" className="rounded-full bg-cyan-500 px-8 py-3 font-bold text-white transition-transform hover:scale-105 shadow-sm shadow-cyan-200">
                 Search
               </button>
             </div>
@@ -453,7 +511,7 @@ export default function PremiumDashboard() {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </form>
         </motion.div>
 
         {/* Popular Destinations */}
@@ -592,22 +650,7 @@ export default function PremiumDashboard() {
             </div>
             
             <div className="flex flex-col gap-6">
-              {[
-                {
-                  title: "Create or open a trip",
-                  type: "Next Step",
-                  desc: "Recommendations appear after your trip data and stops are available.",
-                  tip: "Add destinations and activities to unlock smarter suggestions.",
-                  icon: <Compass className="h-5 w-5 text-amber-400" />,
-                },
-                {
-                  title: "Use Explore filters",
-                  type: "Discovery",
-                  desc: "Search destinations and activity catalog data from the live API.",
-                  tip: "Filter by activity type to narrow options quickly.",
-                  icon: <Activity className="h-5 w-5 text-emerald-400" />,
-                },
-              ].map((rec, i) => (
+              {(tips && tips.length > 0) ? tips.map((rec, i) => (
                 <motion.div
                   key={i}
                   whileHover={{ y: -4 }}
@@ -616,8 +659,8 @@ export default function PremiumDashboard() {
                   <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-sky-100/50 blur-2xl" />
                   
                   <div className="flex items-center gap-3">
-                    <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-50">
-                      {rec.icon}
+                    <div className="grid h-10 w-10 place-items-center rounded-full bg-sky-50 text-cyan-500">
+                      <Lightbulb className="h-5 w-5" />
                     </div>
                     <div>
                       <h3 className="text-lg font-bold text-slate-900">{rec.title}</h3>
@@ -633,12 +676,14 @@ export default function PremiumDashboard() {
                     <div className="flex items-start gap-2">
                       <Wallet className="h-4 w-4 mt-0.5 text-emerald-500 shrink-0" />
                       <p className="text-xs font-medium text-emerald-700">
-                        <span className="font-bold text-emerald-600">Budget Tip:</span> {rec.tip}
+                        <span className="font-bold text-emerald-600">Pro Tip:</span> {rec.tip}
                       </p>
                     </div>
                   </div>
                 </motion.div>
-              ))}
+              )) : (
+                <p className="text-sm text-slate-500">No insights available at the moment.</p>
+              )}
             </div>
           </section>
         </div>

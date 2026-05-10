@@ -27,6 +27,10 @@ enum ChecklistCategory {
   DOCUMENTS
   ELECTRONICS
   TOILETRIES
+  MEDICATIONS
+  EQUIPMENT
+  SHOES
+  FOOD
   MISC
 }
 
@@ -165,12 +169,12 @@ model Budget {
 }
 
 model ChecklistItem {
-  id        String            @id @default(cuid())
+  id        String   @id @default(cuid())
   tripId    String
   name      String
-  category  ChecklistCategory
-  isPacked  Boolean           @default(false)
-  createdAt DateTime          @default(now())
+  category  String
+  isPacked  Boolean  @default(false)
+  createdAt DateTime @default(now())
 
   trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
@@ -49,12 +49,19 @@ function getStatus(trip: TripDto) {
 export default function TripsPage() {
   const [trips, setTrips] = useState<TripDto[]>([]);
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState<StatusFilter>("all");
+  const [status, setStatus] = useState<StatusFilter | "Draft" | "Ongoing" | "Upcoming" | "Completed">("all");
   const [sortBy, setSortBy] = useState<SortFilter>("newest");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const isLoggedIn = useMemo(() => Boolean(getAuthToken()), []);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoggedIn(Boolean(getAuthToken()));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const loadTrips = useCallback(async () => {
     if (!getAuthToken()) {
@@ -71,7 +78,7 @@ export default function TripsPage() {
       params.set("q", query.trim());
     }
 
-    if (status !== "all") {
+    if (status !== "all" && status !== "Ongoing" && status !== "Upcoming" && status !== "Completed") {
       params.set("status", status);
     }
 
@@ -126,7 +133,7 @@ export default function TripsPage() {
   return (
     <AppShell active="My Trips">
       <div className="mx-auto max-w-6xl space-y-6 pb-24 lg:pb-0">
-        <section className="surface-panel grid gap-3 rounded-2xl p-3 md:grid-cols-[1fr_auto_auto_auto]">
+        <section className="surface-panel grid gap-3 rounded-2xl p-3 md:grid-cols-[1fr_auto_auto]">
           <label className="flex h-12 items-center gap-3 rounded-xl border border-sky-100 bg-white px-4 text-sm text-slate-500">
             <Icon name="search" className="h-4 w-4" />
             <input
@@ -137,17 +144,6 @@ export default function TripsPage() {
               className="w-full bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none"
             />
           </label>
-          <select
-            aria-label="Trip status filter"
-            value={status}
-            onChange={(event) => setStatus(event.target.value as StatusFilter)}
-            className="h-12 rounded-xl border border-sky-100 bg-white px-5 text-sm font-semibold text-slate-600"
-          >
-            <option value="all">All status</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="past">Completed</option>
-            <option value="draft">Draft</option>
-          </select>
           <select
             aria-label="Trip sort"
             value={sortBy}
@@ -166,6 +162,25 @@ export default function TripsPage() {
             Refresh
           </button>
         </section>
+
+        <div className="flex flex-wrap items-center gap-2 border-b border-sky-100 pb-1">
+          {(["all", "Ongoing", "Upcoming", "Completed", "draft"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setStatus(tab)}
+              className={`px-6 py-3 text-sm font-black uppercase tracking-wider transition-all relative ${
+                status === tab 
+                  ? "text-[#ff5a3d]" 
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              {tab}
+              {status === tab && (
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#ff5a3d] rounded-t-full" />
+              )}
+            </button>
+          ))}
+        </div>
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -217,7 +232,12 @@ export default function TripsPage() {
           />
         ) : (
           <section className="space-y-5">
-            {trips.map((trip) => {
+            {trips
+              .filter((trip) => {
+                if (status === "all") return true;
+                return getStatus(trip).toLowerCase() === status.toLowerCase();
+              })
+              .map((trip) => {
               const statusLabel = getStatus(trip);
               const spent = trip.totalCost ?? 0;
               const budget = trip.budget?.totalAllocated || trip.budget?.activities || spent || 1;

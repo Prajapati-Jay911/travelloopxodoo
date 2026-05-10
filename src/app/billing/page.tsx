@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState, Icon } from "@/components/ui";
@@ -25,7 +25,14 @@ export default function BillingPage() {
   const [trips, setTrips] = useState<TripDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const isLoggedIn = useMemo(() => Boolean(getAuthToken()), []);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoggedIn(Boolean(getAuthToken()));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const trip = trips[0] ?? null;
   const budget = trip?.budget ?? null;

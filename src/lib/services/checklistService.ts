@@ -42,13 +42,23 @@ export async function listChecklist(userId: string, tripId: string) {
     orderBy: [{ category: "asc" }, { createdAt: "asc" }],
   });
 
-  return Object.values(ChecklistCategory).reduce(
-    (groups, category) => ({
-      ...groups,
-      [category]: items.filter((item) => item.category === category),
-    }),
-    {} as Record<ChecklistCategory, typeof items>,
-  );
+  const defaultCategories = Object.values(ChecklistCategory);
+  const groups: Record<string, typeof items> = {};
+
+  // Initialize with defaults to maintain consistent section headers
+  defaultCategories.forEach((cat) => {
+    groups[cat] = [];
+  });
+
+  // Group items, creating new categories as needed
+  items.forEach((item) => {
+    if (!groups[item.category]) {
+      groups[item.category] = [];
+    }
+    groups[item.category].push(item);
+  });
+
+  return groups;
 }
 
 export async function createChecklistItem(

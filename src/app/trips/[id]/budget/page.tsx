@@ -101,7 +101,7 @@ export default function BudgetPage({ params }: { params: Promise<{ id: string }>
           {categories.map((category) => (
             <label key={category} className="block text-sm font-bold capitalize text-slate-700">
               {category}
-              <input type="number" min="0" value={form[category]} onChange={(event) => setForm((current) => ({ ...current, [category]: event.target.value }))} className="mt-2 h-11 w-full rounded-xl border border-sky-100 px-3 text-slate-900" />
+              <input type="number" min="0" value={form[category]} onChange={(event) => setForm((current) => ({ ...current, [category]: event.target.value }))} placeholder="0" className="mt-2 h-11 w-full rounded-xl border border-sky-100 px-3 text-slate-900" />
             </label>
           ))}
           <button disabled={isSaving} type="submit" className="h-11 self-end rounded-xl bg-[#ff5a3d] text-sm font-black text-white shadow-lg shadow-orange-200 disabled:opacity-60">{isSaving ? "Saving..." : "Save budget"}</button>

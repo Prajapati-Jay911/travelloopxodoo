@@ -1,0 +1,30 @@
+[
+  {
+    "title": "Optimize your budget",
+    "type": "Budgeting",
+    "desc": "Allocate 20% more than your estimated costs for unexpected local experiences.",
+    "tip": "Check for 'Free Walking Tours' in major European cities to save on sightseeing.",
+    "category": "FINANCE"
+  },
+  {
+    "title": "Travel like a local",
+    "type": "Cultural",
+    "desc": "Learn basic greetings in the local language to significantly improve your interactions.",
+    "tip": "Download offline maps for cities where data roaming might be expensive.",
+    "category": "GUIDE"
+  },
+  {
+    "title": "Stay organized",
+    "type": "Efficiency",
+    "desc": "Use the checklist feature to ensure you never leave your travel documents behind.",
+    "tip": "Keep a digital copy of your passport in the Traveloop notes section.",
+    "category": "PLANNING"
+  },
+  {
+    "title": "Best photo spots",
+    "type": "Exploration",
+    "desc": "Visit popular landmarks during the 'Golden Hour' for the best lighting conditions.",
+    "tip": "Ask local baristas for hidden rooftop views that aren't on typical tourist maps.",
+    "category": "DISCOVERY"
+  }
+]

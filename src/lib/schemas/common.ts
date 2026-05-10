@@ -19,7 +19,7 @@ export const dateString = z
   .transform((value) => new Date(value));
 
 export const activityTypeSchema = z.enum(ActivityType);
-export const checklistCategorySchema = z.enum(ChecklistCategory);
+export const checklistCategorySchema = nonEmpty.max(50);
 
 export function dateRangeRefinement<T extends { startDate: Date; endDate: Date }>(
   value: T,

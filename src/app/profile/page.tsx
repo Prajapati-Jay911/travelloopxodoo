@@ -26,7 +26,23 @@ export default function ProfilePage() {
   const [trips, setTrips] = useState<TripDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const isLoggedIn = useMemo(() => Boolean(getAuthToken()), []);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    city: "",
+    country: "",
+    bio: "",
+  });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoggedIn(Boolean(getAuthToken()));
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   const completedTrips = useMemo(() => trips.filter(isCompleted), [trips]);
   const upcomingTrips = useMemo(() => trips.filter((trip) => !isCompleted(trip)), [trips]);
@@ -55,6 +71,13 @@ export default function ProfilePage() {
       ]);
       setProfile(userResult);
       setTrips(tripsResult.data);
+      setEditForm({
+        firstName: userResult.firstName || "",
+        lastName: userResult.lastName || "",
+        city: userResult.city || "",
+        country: userResult.country || "",
+        bio: userResult.bio || "",
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unable to load profile";
       setError(message);
@@ -74,6 +97,23 @@ export default function ProfilePage() {
 
     return () => window.clearTimeout(timer);
   }, [loadProfile]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError("");
+    try {
+      await apiFetch("/api/users/profile", {
+        method: "PUT",
+        body: JSON.stringify(editForm),
+      });
+      await loadProfile();
+      setIsEditing(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to save profile");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const initials = `${profile?.firstName?.[0] ?? ""}${profile?.lastName?.[0] ?? ""}`.toUpperCase() || "U";
   const name = [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") || "Traveler";
@@ -106,41 +146,147 @@ export default function ProfilePage() {
           </section>
         ) : (
           <>
-            <section className="overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5">
-              <div className="relative h-44 bg-gradient-to-r from-sky-600 via-sky-400 to-cyan-300">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_40%,rgba(255,255,255,0.25),transparent_60%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.15),transparent_50%)]" />
+            <section className="overflow-hidden rounded-3xl border border-sky-100 bg-white shadow-2xl shadow-sky-900/10">
+              <div className="relative h-64 w-full">
+                <Image
+                  src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=2000"
+                  alt="Profile Banner"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="100vw"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
               </div>
 
-              <div className="px-6 pb-6">
-                <div className="-mt-16 mb-4">
-                  {profile?.photo ? (
-                    <div className="relative h-28 w-28 overflow-hidden rounded-2xl border-4 border-white shadow-xl shadow-sky-200">
-                      <Image src={profile.photo} alt={name} fill className="object-cover" sizes="112px" />
-                    </div>
-                  ) : (
-                    <div className="grid h-28 w-28 place-items-center rounded-2xl border-4 border-white bg-gradient-to-br from-sky-400 to-sky-600 text-3xl font-black text-white shadow-xl shadow-sky-200">
-                      {initials}
-                    </div>
-                  )}
+              <div className="relative px-8 pb-10">
+                <div className="-mt-24 mb-6 flex justify-start">
+                  <div className="rounded-full border-8 border-white shadow-2xl shadow-sky-900/20 transition-transform hover:scale-105">
+                    {profile?.photo ? (
+                      <div className="relative h-40 w-40 overflow-hidden rounded-full">
+                        <Image src={profile.photo} alt={name} fill className="object-cover" sizes="160px" />
+                      </div>
+                    ) : (
+                      <div className="grid h-40 w-40 place-items-center rounded-full bg-gradient-to-br from-sky-400 to-blue-600 text-5xl font-black text-white">
+                        {initials}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h1 className="text-2xl font-black text-slate-950">{name}</h1>
-                    <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-slate-500">
-                      {subtitle || "Set your city and bio to personalize your profile."}
-                    </p>
-                    {profile?.bio && <p className="mt-1.5 max-w-lg text-sm text-slate-500">{profile.bio}</p>}
+                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+                  {isEditing ? (
+                    <div className="grid flex-1 gap-4 sm:grid-cols-2">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        First Name
+                        <input
+                          type="text"
+                          value={editForm.firstName}
+                          onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                          placeholder="e.g. John"
+                          className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Last Name
+                        <input
+                          type="text"
+                          value={editForm.lastName}
+                          onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                          placeholder="e.g. Doe"
+                          className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        City
+                        <input
+                          type="text"
+                          value={editForm.city}
+                          onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                          placeholder="e.g. New York"
+                          className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Country
+                        <input
+                          type="text"
+                          value={editForm.country}
+                          onChange={(e) => setEditForm({ ...editForm, country: e.target.value })}
+                          placeholder="e.g. USA"
+                          className="mt-1 h-10 w-full rounded-lg border border-sky-100 bg-white px-3 text-sm font-semibold text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none"
+                        />
+                      </label>
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 sm:col-span-2">
+                        Bio
+                        <textarea
+                          value={editForm.bio}
+                          onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                          rows={2}
+                          placeholder="Share your travel story..."
+                          className="mt-1 w-full resize-none rounded-lg border border-sky-100 bg-white px-3 py-2 text-sm font-semibold text-slate-900 shadow-sm focus:border-sky-300 focus:outline-none"
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="flex-1 space-y-2">
+                      <h1 className="text-4xl font-black tracking-tight text-slate-950">{name}</h1>
+                      <div className="flex flex-wrap items-center gap-4 text-sm font-semibold text-slate-600">
+                        <span className="flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1 text-sky-700">
+                          <Icon name="search" className="h-3.5 w-3.5" />
+                          {subtitle || "World Traveler"}
+                        </span>
+                        <span className="flex items-center gap-1.5 text-slate-400">
+                          <Icon name="calendar" className="h-4 w-4" />
+                          Joined {new Date().getFullYear()}
+                        </span>
+                      </div>
+                      <p className="max-w-2xl pt-2 text-base leading-relaxed text-slate-500">
+                        {profile?.bio || "No bio yet. Share your travel story with the world!"}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-3">
+                    {isEditing ? (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setIsEditing(false)}
+                          className="h-11 rounded-xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-600 transition hover:bg-slate-50 active:scale-95"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isSaving}
+                          onClick={handleSave}
+                          className="inline-flex h-11 items-center gap-2 rounded-xl bg-sky-600 px-6 text-sm font-bold text-white shadow-lg shadow-sky-200 transition hover:bg-sky-700 active:scale-95 disabled:opacity-50"
+                        >
+                          {isSaving ? "Saving..." : "Save Changes"}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void loadProfile()}
+                          title="Refresh Profile"
+                          className="grid h-12 w-12 place-items-center rounded-2xl border border-sky-100 bg-white text-sky-700 shadow-sm transition hover:border-sky-300 hover:bg-sky-50 active:scale-90"
+                        >
+                          <Icon name="dashboard" className="h-5 w-5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setIsEditing(true)}
+                          className="inline-flex h-12 items-center gap-3 rounded-2xl bg-[#ff5a3d] px-6 text-sm font-black uppercase tracking-wide text-white shadow-xl shadow-orange-200 transition hover:bg-[#f04a2d] hover:shadow-orange-300 active:scale-95"
+                        >
+                          <Icon name="profile" className="h-5 w-5" />
+                          Edit Profile
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => void loadProfile()}
-                    className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-sky-100 bg-white px-5 text-sm font-bold text-sky-700 shadow-sm shadow-sky-100 transition hover:border-sky-300 hover:bg-sky-50"
-                  >
-                    <Icon name="profile" className="h-4 w-4" />
-                    Refresh Profile
-                  </button>
                 </div>
               </div>
             </section>

@@ -19,9 +19,11 @@ const fullTripInclude = {
     },
   },
   budget: true,
+  checklist: {
+    orderBy: { createdAt: "asc" },
+  },
   _count: {
     select: {
-      checklist: true,
       notes: true,
     },
   },

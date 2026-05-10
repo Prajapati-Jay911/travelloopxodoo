@@ -9,7 +9,7 @@ import Autoplay from "embla-carousel-autoplay";
 import { 
   MapPin, Calendar, Users, Star, Plane, Sun, 
   Search, Sparkles, ChevronRight, Activity, Wallet,
-  Globe, Compass, CheckCircle, ArrowRight, Filter,
+  Globe, ArrowRight, Filter, CheckCircle,
   SlidersHorizontal, ArrowUpDown, LayoutGrid, Lightbulb
 } from "lucide-react";
 import {
@@ -144,6 +144,19 @@ function FloatingStatCard({ icon, title, value, delay, className = "" }: { icon:
     </motion.div>
   );
 }
+
+type DashboardStats = {
+  cities: number;
+  trips: number;
+  activities: number;
+};
+
+type TravelTip = {
+  title: string;
+  type: string;
+  desc: string;
+  tip: string;
+};
 
 // --- Main Page Component ---
 

@@ -38,7 +38,11 @@ type IconName =
   | "notes"
   | "share"
   | "more"
-  | "arrow";
+  | "arrow"
+  | "chevron-left"
+  | "chevron-down"
+  | "filter"
+  | "alert";
 
 const iconPaths: Record<IconName, string> = {
   dashboard: "M4 5h7v7H4V5Zm9 0h7v4h-7V5ZM4 14h7v5H4v-5Zm9-3h7v8h-7v-8Z",
@@ -66,6 +70,10 @@ const iconPaths: Record<IconName, string> = {
   more: "M6 13.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm6 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Zm6 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z",
   arrow:
     "M13.5 5.5 20 12l-6.5 6.5-1.06-1.06 4.69-4.69H4v-1.5h13.13l-4.69-4.69L13.5 5.5Z",
+  "chevron-left": "m15 18-6-6 6-6",
+  "chevron-down": "m6 9 6 6 6-6",
+  filter: "M22 3H2l8 9.46V19l4 2v-8.54L22 3z",
+  alert: "M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z",
 };
 
 export function Icon({
@@ -310,7 +318,7 @@ export function EmptyState({
 }: {
   title: string;
   body: string;
-  action: React.ReactNode;
+  action?: React.ReactNode;
 }) {
   return (
     <div className="surface-panel rounded-2xl p-8 text-center">

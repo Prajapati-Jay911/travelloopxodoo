@@ -4,10 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState, Icon } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
 import {
   apiList,
-  cityImage,
   formatMoney,
   type ActivityDto,
   type CityDto,
@@ -23,8 +22,9 @@ import {
   ArrowRight
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") || "";
   const [query, setQuery] = useState(initialQuery);
@@ -32,8 +32,6 @@ export default function SearchPage() {
   const [activities, setActivities] = useState<ActivityDto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [sortBy, setSortBy] = useState("Popularity");
-  const [filterType, setFilterType] = useState("All");
 
   const performSearch = useCallback(async () => {
     setIsLoading(true);
@@ -199,5 +197,13 @@ export default function SearchPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={null}>
+      <SearchContent />
+    </Suspense>
   );
 }

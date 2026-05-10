@@ -26,7 +26,11 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       storeAuth(payload);
-      router.push("/trips");
+      if (payload.user.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/trips");
+      }
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unable to log in");

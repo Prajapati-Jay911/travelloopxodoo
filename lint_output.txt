@@ -1,0 +1,102 @@
+
+> my-app@0.1.0 lint
+> eslint
+
+
+/disk1/Travelloopxoddo/src/app/admin/page.tsx
+   18:3    warning  'CalendarDays' is defined but never used                         @typescript-eslint/no-unused-vars
+  483:76   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  483:108  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+/disk1/Travelloopxoddo/src/app/billing/page.tsx
+   3:10  warning  'use' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            @typescript-eslint/no-unused-vars
+   6:28  warning  'ProgressBar' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+  15:18  warning  'AnimatePresence' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                @typescript-eslint/no-unused-vars
+  21:10  warning  'error' is assigned a value but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+  55:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/disk1/Travelloopxoddo/src/app/billing/page.tsx:55:5
+  53 |
+  54 |   useEffect(() => {
+> 55 |     loadTrips();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  56 |   }, [loadTrips]);
+  57 |
+  58 |   useEffect(() => {                                                      react-hooks/set-state-in-effect
+  60:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/disk1/Travelloopxoddo/src/app/billing/page.tsx:60:7
+  58 |   useEffect(() => {
+  59 |     if (selectedTripId) {
+> 60 |       loadInvoice(selectedTripId);
+     |       ^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  61 |     }
+  62 |   }, [selectedTripId, loadInvoice]);
+  63 |  react-hooks/set-state-in-effect
+
+/disk1/Travelloopxoddo/src/app/community/page.tsx
+   67:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/disk1/Travelloopxoddo/src/app/community/page.tsx:67:5
+  65 |
+  66 |   useEffect(() => {
+> 67 |     loadCommunity();
+     |     ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  68 |   }, [loadCommunity]);
+  69 |
+  70 |   useEffect(() => {                       react-hooks/set-state-in-effect
+   72:7   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/disk1/Travelloopxoddo/src/app/community/page.tsx:72:7
+  70 |   useEffect(() => {
+  71 |     if (isShareModalOpen) {
+> 72 |       loadUserTrips();
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  73 |     }
+  74 |   }, [isShareModalOpen]);
+  75 |  react-hooks/set-state-in-effect
+  323:75  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react/no-unescaped-entities
+
+/disk1/Travelloopxoddo/src/app/page.tsx
+  12:10  warning  'Compass' is defined but never used  @typescript-eslint/no-unused-vars
+
+/disk1/Travelloopxoddo/src/app/search/page.tsx
+   7:22  warning  'Icon' is defined but never used                    @typescript-eslint/no-unused-vars
+  10:3   warning  'cityImage' is defined but never used               @typescript-eslint/no-unused-vars
+  35:10  warning  'sortBy' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  35:18  warning  'setSortBy' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  36:10  warning  'filterType' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  36:22  warning  'setFilterType' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/disk1/Travelloopxoddo/src/app/share/checklist/[token]/page.tsx
+  4:10  warning  'Icon' is defined but never used       @typescript-eslint/no-unused-vars
+  6:10  warning  'motion' is defined but never used     @typescript-eslint/no-unused-vars
+  9:10  warning  'Globe' is defined but never used      @typescript-eslint/no-unused-vars
+  9:38  warning  'ArrowLeft' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 23 problems (7 errors, 16 warnings)
+

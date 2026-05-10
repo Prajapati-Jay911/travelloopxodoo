@@ -1,12 +1,12 @@
 "use client";
 
 import { use, useCallback, useEffect, useState } from "react";
-import { Icon, ProgressBar } from "@/components/ui";
+import { ProgressBar } from "@/components/ui";
 import { apiFetch, type ChecklistItemDto, type TripDto } from "@/lib/client-api";
-import { motion } from "framer-motion";
+
 import Link from "next/link";
 import Image from "next/image";
-import { Globe, Share2, Check, Lock, ArrowLeft } from "lucide-react";
+import { Share2, Check, Lock } from "lucide-react";
 
 const defaultCategories = [
   "DOCUMENTS",
@@ -44,7 +44,27 @@ export default function SharedChecklistPage({ params }: { params: Promise<{ toke
   }, [token]);
 
   useEffect(() => {
-    loadSharedData();
+    let mounted = true;
+    
+    const init = async () => {
+      try {
+        await loadSharedData();
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : "Unable to load shared data");
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    init();
+    
+    return () => {
+      mounted = false;
+    };
   }, [loadSharedData]);
 
   if (isLoading) {

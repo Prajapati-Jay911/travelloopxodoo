@@ -64,13 +64,25 @@ export default function CommunityPage() {
   };
 
   useEffect(() => {
-    loadCommunity();
+    let isMounted = true;
+    const init = async () => {
+      if (isMounted) {
+        await loadCommunity();
+      }
+    };
+    void init();
+    return () => { isMounted = false; };
   }, [loadCommunity]);
 
   useEffect(() => {
-    if (isShareModalOpen) {
-      loadUserTrips();
-    }
+    let isMounted = true;
+    const init = async () => {
+      if (isMounted && isShareModalOpen) {
+        await loadUserTrips();
+      }
+    };
+    void init();
+    return () => { isMounted = false; };
   }, [isShareModalOpen]);
 
   async function handleShareTrip(tripId: string) {
@@ -320,7 +332,7 @@ export default function CommunityPage() {
             <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
               {userTrips.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-slate-500 font-medium mb-4">You haven't created any trips yet.</p>
+                  <p className="text-slate-500 font-medium mb-4">You haven&apos;t created any trips yet.</p>
                   <Link href="/trips/new" className="px-6 py-2 rounded-xl bg-sky-600 text-white font-bold text-sm shadow-lg shadow-sky-100">
                     Create your first trip
                   </Link>

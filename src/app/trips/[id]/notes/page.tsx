@@ -3,17 +3,13 @@
 import { FormEvent, use, useCallback, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { EmptyState, Icon } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
 import { apiFetch, type NoteDto, type TripDto } from "@/lib/client-api";
 import { 
   Search, 
-  Filter, 
-  ArrowUpDown, 
-  LayoutGrid, 
   Plus, 
   Edit2, 
   Trash2, 
-  ChevronDown,
   Calendar,
   MapPin,
   X,
@@ -42,9 +38,27 @@ export default function NotesPage({ params }: { params: Promise<{ id: string }> 
   }, [id]);
 
   useEffect(() => {
-    loadNotes()
-      .catch((err) => setError(err instanceof Error ? err.message : "Unable to load notes"))
-      .finally(() => setIsLoading(false));
+    let mounted = true;
+    
+    const init = async () => {
+      try {
+        await loadNotes();
+      } catch (err) {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : "Unable to load notes");
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    init();
+    
+    return () => {
+      mounted = false;
+    };
   }, [loadNotes]);
 
   const tripDays = useMemo(() => {
@@ -189,7 +203,7 @@ export default function NotesPage({ params }: { params: Promise<{ id: string }> 
               {["all", "day", "stop"].map((type) => (
                 <button
                   key={type}
-                  onClick={() => setFilterType(type as any)}
+                  onClick={() => setFilterType(type as "all" | "day" | "stop")}
                   className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${
                     filterType === type 
                       ? "bg-white text-sky-600 shadow-sm border border-sky-100" 

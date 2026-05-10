@@ -267,6 +267,10 @@ export default function TripViewPage({
             <Icon name="notes" className="h-4 w-4" />
             Trip Notes
           </Link>
+          <Link href={`/trips/${trip.id}/billing`} className="flex h-14 items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white text-sm font-bold text-sky-700 shadow-sm shadow-sky-100 transition hover:border-sky-300 hover:bg-sky-50">
+            <Icon name="budget" className="h-4 w-4" />
+            Billing & Invoice
+          </Link>
           <button type="button" onClick={() => void shareTrip()} className="flex h-14 items-center justify-center gap-2 rounded-xl border border-sky-100 bg-white text-sm font-bold text-sky-700 shadow-sm shadow-sky-100 transition hover:border-sky-300 hover:bg-sky-50">
             <Icon name="share" className="h-4 w-4" />
             Share

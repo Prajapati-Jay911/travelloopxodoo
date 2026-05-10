@@ -18,8 +18,8 @@ export const dateString = z
   .or(z.string().regex(/^\d{4}-\d{2}-\d{2}$/))
   .transform((value) => new Date(value));
 
-export const activityTypeSchema = z.enum(ActivityType);
-export const checklistCategorySchema = nonEmpty.max(50);
+export const activityTypeSchema = z.nativeEnum(ActivityType);
+export const checklistCategorySchema = z.nativeEnum(ChecklistCategory);
 
 export function dateRangeRefinement<T extends { startDate: Date; endDate: Date }>(
   value: T,

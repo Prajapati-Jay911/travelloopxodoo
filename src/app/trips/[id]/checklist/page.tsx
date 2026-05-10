@@ -5,7 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { EmptyState, Icon, ProgressBar } from "@/components/ui";
 import { apiFetch, type ChecklistItemDto, type TripDto } from "@/lib/client-api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Share2, Globe, Copy, Check, X, Link as LinkIcon } from "lucide-react";
+import { Share2, Globe, Copy, Check, X, Lock } from "lucide-react";
 
 const defaultCategories = [
   "DOCUMENTS",
@@ -50,6 +50,7 @@ export default function ChecklistPage({ params }: { params: Promise<{ id: string
   }, [loadChecklist]);
 
   async function addItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     const finalCategory = showCustomInput ? customCategory.trim() : selectedCategory;
     if (!finalCategory) {
       setError("Category name is required");

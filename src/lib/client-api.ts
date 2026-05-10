@@ -92,10 +92,12 @@ export type TripDto = {
   isPublic: boolean;
   shareToken?: string | null;
   userId: string;
+  travelers: string[];
   createdAt?: string;
   updatedAt?: string;
   budget?: BudgetDto | null;
   stops?: StopDto[];
+  checklist?: ChecklistItemDto[];
   stopCount?: number;
   totalCost?: number;
   _count?: {
@@ -129,6 +131,28 @@ export type NoteDto = {
     id: string;
     city?: CityDto;
   } | null;
+};
+
+export type InvoiceDto = {
+  id: string;
+  tripId: string;
+  invoiceNumber: string;
+  generatedDate: string;
+  status: "pending" | "paid";
+  taxRate: number;
+  discount: number;
+  subtotal: number;
+  taxAmount: number;
+  grandTotal: number;
+  activities: ActivityDto[];
+  trip: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    travelers: string[];
+    owner: string;
+  };
+  budget: BudgetDto | null;
 };
 
 export type ListResponse<T> = {

@@ -74,6 +74,8 @@ model Trip {
   budget    Budget?
   checklist ChecklistItem[]
   notes     Note[]
+  invoice   Invoice?
+  travelers String[] @default([])
 
   @@index([userId, startDate])
   @@index([isPublic, createdAt])
@@ -123,6 +125,8 @@ model Activity {
   name        String
   type        ActivityType
   cost        Float        @default(0)
+  quantity    Int          @default(1)
+  unitCost    Float        @default(0)
   duration    Int
   description String?
   imageUrl    String?
@@ -172,7 +176,7 @@ model ChecklistItem {
   id        String   @id @default(cuid())
   tripId    String
   name      String
-  category  String
+  category  ChecklistCategory
   isPacked  Boolean  @default(false)
   createdAt DateTime @default(now())
 
@@ -200,4 +204,18 @@ model Note {
   @@index([stopId])
   @@index([day])
   @@index([userId])
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  tripId        String   @unique
+  invoiceNumber String   @unique
+  generatedDate DateTime @default(now())
+  status        String   @default("pending")
+  taxRate       Float    @default(5)
+  discount      Float    @default(0)
+  
+  trip Trip @relation(fields: [tripId], references: [id], onDelete: Cascade)
+
+  @@index([tripId])
 }

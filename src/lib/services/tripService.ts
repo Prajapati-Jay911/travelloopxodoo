@@ -388,7 +388,19 @@ export async function getAdminStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [totalUsers, totalTrips, tripsCreatedToday, topCities] = await prisma.$transaction([
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  const [
+    totalUsers, 
+    totalTrips, 
+    tripsCreatedToday, 
+    topCities,
+    totalActivities,
+    paidInvoices
+  ] = await prisma.$transaction([
     prisma.user.count(),
     prisma.trip.count(),
     prisma.trip.count({ where: { createdAt: { gte: today } } }),
@@ -403,9 +415,93 @@ export async function getAdminStats() {
         _count: { select: { stops: true } },
       },
     }),
+    prisma.activity.count(),
+    prisma.invoice.findMany({
+      where: { status: "paid" },
+      select: {
+        trip: {
+          select: {
+            budget: { select: { totalAllocated: true } }
+          }
+        },
+        taxRate: true,
+        discount: true
+      }
+    })
   ]);
 
-  return { totalUsers, totalTrips, tripsCreatedToday, topCities };
+  // Calculate total revenue from paid invoices
+  // Revenue = subtotal + tax - discount
+  // For simplicity, we use the trip budget's totalAllocated as subtotal if invoice subtotal isn't stored
+  const totalRevenue = paidInvoices.reduce((acc, inv) => {
+    const subtotal = inv.trip.budget?.totalAllocated || 0;
+    const tax = subtotal * (inv.taxRate / 100);
+    const discount = inv.discount;
+    return acc + (subtotal + tax - discount);
+  }, 0);
+
+  const recentTripsRaw = await prisma.trip.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      name: true,
+      budget: { select: { totalAllocated: true } },
+      startDate: true,
+      endDate: true,
+      user: {
+        select: { firstName: true, lastName: true, email: true }
+      }
+    }
+  });
+
+  const recentTrips = recentTripsRaw.map(t => ({
+    ...t,
+    totalCost: t.budget?.totalAllocated || 0,
+    budget: undefined
+  }));
+
+  // Fetch trips for charts
+  const chartTrips = await prisma.trip.findMany({
+    where: { createdAt: { gte: sixMonthsAgo } },
+    select: { createdAt: true, budget: { select: { totalAllocated: true } } }
+  });
+
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const tripsPerMonth = [];
+  const budgetTrends = [];
+
+  for (let i = 0; i < 6; i++) {
+    const d = new Date();
+    d.setMonth(d.getMonth() - (5 - i));
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    const name = months[m];
+
+    const monthTrips = chartTrips.filter(t => 
+      t.createdAt.getMonth() === m && t.createdAt.getFullYear() === y
+    );
+
+    tripsPerMonth.push({ name, value: monthTrips.length });
+    
+    const avgBudget = monthTrips.length > 0 
+      ? monthTrips.reduce((sum, t) => sum + (t.budget?.totalAllocated || 0), 0) / monthTrips.length
+      : 0;
+    
+    budgetTrends.push({ name, value: Math.round(avgBudget) });
+  }
+
+  return { 
+    totalUsers, 
+    totalTrips, 
+    tripsCreatedToday, 
+    topCities,
+    totalActivities,
+    totalRevenue,
+    recentTrips,
+    tripsPerMonth,
+    budgetTrends
+  };
 }
 
 export async function listAdminUsers(page = 1, limit = 20) {

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Icon } from "@/components/ui";
-import { Plane } from "lucide-react";
 import { getAuthToken, getStoredUser, clearAuth } from "@/lib/client-api";
 
 type NavItem = {
@@ -22,7 +21,7 @@ const defaultNavItems: NavItem[] = [
   { href: "/profile", label: "Profile", icon: "profile" },
 ];
 
-export function TopNav({ active }: { active?: string }) {
+export function TopNav({ active, adminMode }: { active?: string; adminMode?: boolean }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("");
 
@@ -37,8 +36,8 @@ export function TopNav({ active }: { active?: string }) {
     return () => clearTimeout(timer);
   }, []);
 
-  const navItems: NavItem[] = [...defaultNavItems];
-  if (isLoggedIn && getStoredUser()?.role === "ADMIN") {
+  const navItems: NavItem[] = adminMode ? [] : [...defaultNavItems];
+  if (isLoggedIn && getStoredUser()?.role === "ADMIN" && !adminMode) {
     navItems.push({ href: "/admin", label: "Admin", icon: "admin" });
   }
 
@@ -57,12 +56,13 @@ export function TopNav({ active }: { active?: string }) {
               alt="Traveloop Logo"
               fill
               className="object-cover"
+              sizes="44px"
               priority
             />
           </div>
           <span className="min-w-0">
             <span className="block truncate text-xl font-black tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">
-              Traveloop
+              Traveloop{adminMode && <span className="text-rose-500 ml-1 font-bold text-sm uppercase">Admin</span>}
             </span>
           </span>
         </Link>
@@ -110,36 +110,40 @@ export function TopNav({ active }: { active?: string }) {
         </div>
       </div>
 
-      <nav className="hide-scrollbar flex gap-2 overflow-x-auto border-t border-sky-50 px-4 py-2 lg:hidden">
-        {navItems.map((item) => (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-label={item.label}
-            className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-xs font-semibold ${active === item.label
-                ? "bg-sky-500 text-white"
-                : "bg-sky-50 text-slate-600"
-              }`}
-          >
-            <Icon name={item.icon} className="h-4 w-4" />
-            {item.label}
-          </Link>
-        ))}
-      </nav>
+      {navItems.length > 0 && (
+        <nav className="hide-scrollbar flex gap-2 overflow-x-auto border-t border-sky-50 px-4 py-2 lg:hidden">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-label={item.label}
+              className={`inline-flex h-10 shrink-0 items-center gap-2 rounded-full px-3 text-xs font-semibold ${active === item.label
+                  ? "bg-sky-500 text-white"
+                  : "bg-sky-50 text-slate-600"
+                }`}
+            >
+              <Icon name={item.icon} className="h-4 w-4" />
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
 
 export function AppShell({
   active,
+  adminMode,
   children,
 }: {
   active: string;
+  adminMode?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <div className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_42%,#fff7ed_100%)] transition-colors duration-300">
-      <TopNav active={active} />
+      <TopNav active={active} adminMode={adminMode} />
       <main className="px-4 py-6 md:px-8 md:py-8 transition-colors duration-300">
         {children}
       </main>

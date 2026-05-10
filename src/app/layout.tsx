@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Traveloop | Enterprise travel planning",
   description:
     "Plan multi-city itineraries, budgets, packing, notes, and public trip sharing in one polished workspace.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/favicon.png",
+  },
 };
 
 export default function RootLayout({

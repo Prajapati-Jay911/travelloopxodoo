@@ -66,9 +66,14 @@ export default function SignupPage() {
           <section className="relative z-10 flex min-h-[520px] items-center px-6 py-12 md:px-12 lg:px-16">
             <div className="max-w-xl text-white">
               <div className="mb-8 inline-flex items-center gap-3">
-                <span className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-white/15 text-white backdrop-blur">
-                  <Icon name="arrow" className="h-5 w-5 -rotate-45" />
-                </span>
+                <div className="relative h-12 w-12 overflow-hidden rounded-full border border-white/35 bg-white/15 backdrop-blur shadow-lg shadow-black/20">
+                  <Image
+                    src="/logo.png"
+                    alt="Traveloop Logo"
+                    fill
+                    className="object-cover scale-110"
+                  />
+                </div>
                 <span className="text-3xl font-black tracking-tight">
                   TRAVELOOP
                 </span>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Icon } from "@/components/ui";
 import { Plane } from "lucide-react";
 import { getAuthToken, getStoredUser, clearAuth } from "@/lib/client-api";
@@ -49,12 +50,18 @@ export function TopNav({ active }: { active?: string }) {
   return (
     <header className="sticky top-0 z-40 border-b border-sky-100 bg-white/90 shadow-sm shadow-sky-900/5 backdrop-blur-xl transition-colors duration-300">
       <div className="mx-auto flex h-18 max-w-7xl items-center justify-between gap-4 px-4 md:px-8">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-sky-400 to-blue-500 text-white shadow-lg shadow-sky-500/30">
-            <Plane className="h-5 w-5 -rotate-45" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-sky-100 ring-offset-2 transition-all duration-300 group-hover:ring-sky-300 group-hover:scale-105">
+            <Image
+              src="/logo.png"
+              alt="Traveloop Logo"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
           <span className="min-w-0">
-            <span className="block truncate text-lg font-black tracking-tight text-slate-900">
+            <span className="block truncate text-xl font-black tracking-tight text-slate-900 group-hover:text-sky-600 transition-colors">
               Traveloop
             </span>
           </span>

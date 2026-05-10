@@ -119,6 +119,7 @@ export type NoteDto = {
   id: string;
   tripId: string;
   stopId?: string | null;
+  day?: number | null;
   userId: string;
   title: string;
   content: string;

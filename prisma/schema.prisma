@@ -185,6 +185,7 @@ model Note {
   id        String   @id @default(cuid())
   tripId    String
   stopId    String?
+  day       Int?
   userId    String
   title     String
   content   String
@@ -197,5 +198,6 @@ model Note {
 
   @@index([tripId, updatedAt])
   @@index([stopId])
+  @@index([day])
   @@index([userId])
 }

@@ -68,11 +68,17 @@ function DashboardNav({ isLoggedIn }: { isLoggedIn: boolean }) {
   return (
     <header className="absolute left-0 right-0 top-0 z-50 px-4 py-6 md:px-8">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between rounded-full border border-white/10 bg-black/20 px-6 backdrop-blur-xl transition-all hover:bg-black/30">
-        <Link href="/" className="flex items-center gap-3">
-          <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 text-white shadow-lg shadow-cyan-500/30">
-            <Plane className="h-5 w-5 -rotate-45" />
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative h-11 w-11 overflow-hidden rounded-full ring-2 ring-white/20 ring-offset-2 ring-offset-black/20 transition-all duration-300 group-hover:ring-white/50 group-hover:scale-105 shadow-xl">
+            <Image
+              src="/logo.png"
+              alt="Traveloop Logo"
+              fill
+              className="object-cover"
+              priority
+            />
           </div>
-          <span className="text-xl font-black tracking-tight text-white">
+          <span className="text-xl font-black tracking-tight text-white group-hover:text-cyan-300 transition-colors">
             Traveloop
           </span>
         </Link>

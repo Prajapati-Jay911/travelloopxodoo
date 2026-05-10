@@ -5,6 +5,7 @@ import { Icon, ProgressBar } from "@/components/ui";
 import { apiFetch, type ChecklistItemDto, type TripDto } from "@/lib/client-api";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { Globe, Share2, Check, Lock, ArrowLeft } from "lucide-react";
 
 const defaultCategories = [
@@ -99,8 +100,16 @@ export default function SharedChecklistPage({ params }: { params: Promise<{ toke
       {/* Header */}
       <header className="bg-white border-b border-sky-100 sticky top-0 z-30">
         <div className="mx-auto max-w-4xl px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 text-cyan-600 font-black text-xl">
-            <Globe className="h-6 w-6" /> Traveloop
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="relative h-9 w-9 overflow-hidden rounded-full ring-2 ring-sky-100 ring-offset-2 transition-all duration-300 group-hover:ring-sky-300 group-hover:scale-105">
+              <Image
+                src="/logo.png"
+                alt="Traveloop Logo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <span className="text-cyan-600 font-black text-xl group-hover:text-cyan-500 transition-colors">Traveloop</span>
           </Link>
           <div className="flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full text-[10px] font-black text-emerald-600 uppercase tracking-widest border border-emerald-100">
             <Share2 className="h-3 w-3" /> Shared View
@@ -177,7 +186,7 @@ export default function SharedChecklistPage({ params }: { params: Promise<{ toke
         <div className="bg-cyan-50 rounded-3xl p-8 border border-cyan-100 text-center space-y-4">
           <h3 className="text-lg font-black text-cyan-900">Want to plan your own trip?</h3>
           <p className="text-cyan-700 text-sm font-medium">Join Traveloop to create your own smart itineraries, budgets, and checklists.</p>
-          <Link href="/register" className="inline-flex h-12 items-center justify-center px-10 rounded-xl bg-cyan-600 text-sm font-bold text-white shadow-lg shadow-cyan-200 transition-transform hover:scale-105">
+          <Link href="/signup" className="inline-flex h-12 items-center justify-center px-10 rounded-xl bg-cyan-600 text-sm font-bold text-white shadow-lg shadow-cyan-200 transition-transform hover:scale-105">
             Get Started for Free
           </Link>
         </div>

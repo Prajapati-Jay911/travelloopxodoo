@@ -57,9 +57,16 @@ export default function SharePage({
     <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_48%,#fff7ed_100%)]">
       <header className="sticky top-0 z-20 border-b border-sky-100 bg-white/75 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-500 font-bold text-white">T</span>
-            <span className="font-bold text-slate-950">Traveloop</span>
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-sky-100 ring-offset-2 transition-all duration-300 group-hover:ring-sky-300 group-hover:scale-105">
+              <Image
+                src="/logo.png"
+                alt="Traveloop Logo"
+                fill
+                className="object-cover"
+              />
+            </div>
+            <span className="font-bold text-slate-950 group-hover:text-sky-600 transition-colors">Traveloop</span>
           </Link>
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => void copyLink()} aria-label="Copy public link" className="hidden h-10 rounded-xl border border-sky-100 px-4 text-sm font-semibold text-slate-700 sm:block">Copy link</button>

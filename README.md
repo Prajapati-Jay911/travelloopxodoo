@@ -10,6 +10,22 @@
 
 ---
 
+## 📸 Screenshots
+
+| Main Dashboard | Explore Destinations |
+| :---: | :---: |
+| ![Dashboard](./screenshorts/dashboard.png) | ![Explore](./screenshorts/explore.png) |
+
+| My Trips | Admin Dashboard |
+| :---: | :---: |
+| ![My Trips](./screenshorts/mytrip.png) | ![Admin](./screenshorts/admin_dashboard.png) |
+
+| Admin Login |
+| :---: |
+| ![Admin Login](./screenshorts/admin_login.png) |
+
+---
+
 ## 🔗 Project Links
 
 | Resource | Link |
@@ -107,21 +123,6 @@ src/
 
 ---
 
-## 📸 Screenshots
-
-| Main Dashboard | Explore Destinations |
-| :---: | :---: |
-| ![Dashboard](./screenshorts/dashboard.png) | ![Explore](./screenshorts/explore.png) |
-
-| My Trips | Admin Dashboard |
-| :---: | :---: |
-| ![My Trips](./screenshorts/mytrip.png) | ![Admin](./screenshorts/admin_dashboard.png) |
-
-| Admin Login |
-| :---: |
-| ![Admin Login](./screenshorts/admin_login.png) |
-
----
 
 ## 📄 License
 

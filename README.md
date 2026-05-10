@@ -10,6 +10,15 @@
 
 ---
 
+## 🔗 Project Links
+
+| Resource | Link |
+| :--- | :--- |
+| **🚀 Live Demo** | [View Live Site](https://travelloopxoddo.vercel.app/) |
+| **📺 Video Walkthrough** | [Watch Demo Video](https://drive.google.com/drive/folders/1aZ8o0ghhVzKtPn4N7K2XS6lHX_p4TZvz?usp=sharing) |
+
+---
+
 ## 📸 Screenshots
 
 | Main Dashboard | Explore Destinations |
@@ -26,14 +35,6 @@
 
 ---
 
-## 🔗 Project Links
-
-| Resource | Link |
-| :--- | :--- |
-| **🚀 Live Demo** | [View Live Site](https://travelloopxoddo.vercel.app/) |
-| **📺 Video Walkthrough** | [Watch Demo Video](https://drive.google.com/drive/folders/1aZ8o0ghhVzKtPn4N7K2XS6lHX_p4TZvz?usp=sharing) |
-
----
 
 ## ✨ Key Features
 

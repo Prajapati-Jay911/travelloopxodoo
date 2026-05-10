@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
-  --card-soft: #152238;
-  --border: #334155;
-  --primary: #6366f1;
-  --accent: #f59e0b;
+  --background: #f7fbff;
+  --foreground: #102033;
+  --card: #ffffff;
+  --card-soft: #eef7ff;
+  --border: #d7e5f2;
+  --primary: #0ea5e9;
+  --accent: #ff5a3d;
   --success: #10b981;
   --danger: #ef4444;
 }
+
 
 @theme inline {
   --color-background: var(--background);
@@ -30,7 +31,7 @@ body {
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.45);
+  background: rgba(14, 165, 233, 0.24);
 }
 
 a,
@@ -42,18 +43,18 @@ textarea {
 }
 
 .glass-panel {
-  border: 1px solid rgba(148, 163, 184, 0.22);
+  border: 1px solid rgba(125, 169, 204, 0.28);
   background:
-    linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.86)),
-    rgba(30, 41, 59, 0.72);
-  box-shadow: 0 24px 80px rgba(2, 6, 23, 0.32);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(240, 248, 255, 0.9)),
+    rgba(255, 255, 255, 0.82);
+  box-shadow: 0 24px 80px rgba(37, 99, 135, 0.16);
   backdrop-filter: blur(18px);
 }
 
 .surface-panel {
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  background: rgba(15, 23, 42, 0.74);
-  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.26);
+  border: 1px solid rgba(125, 169, 204, 0.24);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 18px 60px rgba(37, 99, 135, 0.12);
 }
 
 .lift-card {
@@ -65,17 +66,18 @@ textarea {
 }
 
 .lift-card:hover {
-  border-color: rgba(99, 102, 241, 0.58);
-  box-shadow: 0 18px 46px rgba(15, 23, 42, 0.44);
+  border-color: rgba(14, 165, 233, 0.5);
+  box-shadow: 0 18px 46px rgba(37, 99, 135, 0.18);
   transform: translateY(-3px);
 }
+
 
 .shimmer {
   background: linear-gradient(
     90deg,
-    rgba(51, 65, 85, 0.45),
-    rgba(148, 163, 184, 0.18),
-    rgba(51, 65, 85, 0.45)
+    rgba(203, 224, 239, 0.55),
+    rgba(255, 255, 255, 0.9),
+    rgba(203, 224, 239, 0.55)
   );
   background-size: 220% 100%;
   animation: shimmer 1.5s linear infinite;

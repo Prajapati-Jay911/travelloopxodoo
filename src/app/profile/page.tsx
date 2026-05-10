@@ -1,77 +1,183 @@
+import Image from "next/image";
+import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
-import { ButtonLink, Icon, PageHeader } from "@/components/ui";
-
-const tabs = ["Profile", "Security", "Preferences", "Saved", "Danger Zone"];
+import { Icon, ProgressBar } from "@/components/ui";
+import { trips, formatCurrency } from "@/lib/traveloop-data";
 
 export default function ProfilePage() {
+  const completedTrips = trips.filter((t) => t.status === "Completed");
+  const upcomingTrips = trips.filter((t) => t.status !== "Completed");
+  const totalCities = trips.reduce((sum, t) => sum + t.cities.length, 0);
+
   return (
     <AppShell active="Profile">
-      <div className="mx-auto max-w-6xl space-y-8 pb-24 lg:pb-0">
-        <PageHeader
-          eyebrow="Account settings"
-          title="Keep traveler identity, privacy, and preferences current."
-          description="Manage profile fields, saved destinations, sessions, and account-level controls from one place."
-        />
-        <div className="hide-scrollbar flex gap-3 overflow-x-auto">
-          {tabs.map((tab, index) => (
-            <button
-              key={tab}
-              type="button"
-              aria-label={tab}
-              className={`rounded-xl border px-4 py-2 text-sm font-semibold ${
-                index === 0
-                  ? "border-indigo-400 bg-indigo-500 text-white"
-                  : "border-slate-700 bg-slate-950/70 text-slate-300"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-        <section className="grid gap-6 lg:grid-cols-[300px_1fr]">
-          <aside className="surface-panel rounded-3xl p-6 text-center">
-            <div className="mx-auto grid h-28 w-28 place-items-center rounded-full bg-indigo-500 text-3xl font-semibold text-white">
-              PR
+      <div className="mx-auto max-w-5xl space-y-6 pb-24 lg:pb-0">
+        {/* Profile header */}
+        <section className="overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5">
+          <div className="relative h-44 bg-gradient-to-r from-sky-600 via-sky-400 to-cyan-300">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_40%,rgba(255,255,255,0.25),transparent_60%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.15),transparent_50%)]" />
+          </div>
+
+          <div className="px-6 pb-6">
+            {/* Avatar row — sits above text, pulled up into the banner */}
+            <div className="-mt-16 mb-4">
+              <div className="grid h-28 w-28 place-items-center rounded-2xl border-4 border-white bg-gradient-to-br from-sky-400 to-sky-600 text-3xl font-black text-white shadow-xl shadow-sky-200">
+                PR
+              </div>
             </div>
-            <h2 className="mt-5 text-xl font-semibold text-white">Priya Rao</h2>
-            <p className="mt-1 text-sm text-slate-400">Mumbai, India</p>
-            <button
-              type="button"
-              aria-label="Upload profile photo"
-              className="mt-5 h-11 w-full rounded-xl border border-slate-700 bg-slate-950 text-sm font-semibold text-slate-100"
-            >
-              Upload photo
-            </button>
-          </aside>
-          <form className="glass-panel rounded-3xl p-6 md:p-8">
-            <div className="grid gap-4 md:grid-cols-2">
-              {["First name", "Last name", "Email", "Phone", "City", "Country"].map((field) => (
-                <label key={field} className="text-sm font-medium text-slate-200">
-                  {field}
-                  <input
-                    aria-label={field}
-                    className="mt-2 h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-slate-100"
-                    placeholder={field}
-                  />
-                </label>
-              ))}
-              <label className="text-sm font-medium text-slate-200 md:col-span-2">
-                Bio
-                <textarea
-                  aria-label="Bio"
-                  rows={5}
-                  className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-slate-100"
-                  placeholder="Budget-aware cultural traveler with a soft spot for train routes."
-                />
-              </label>
+
+            {/* Name + button row — fully below the avatar */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-2xl font-black text-slate-950">
+                  Priya Rao
+                </h1>
+                <p className="mt-1.5 max-w-lg text-sm leading-relaxed text-slate-500">
+                  Mumbai based planner · Loves train routes, local food, and
+                  budget-aware trips
+                </p>
+              </div>
+              <button
+                type="button"
+                className="inline-flex h-11 shrink-0 items-center gap-2 rounded-xl border border-sky-100 bg-white px-5 text-sm font-bold text-sky-700 shadow-sm shadow-sky-100 transition hover:border-sky-300 hover:bg-sky-50"
+              >
+                <Icon name="profile" className="h-4 w-4" />
+                Edit Profile
+              </button>
             </div>
-            <div className="mt-6 flex justify-end">
-              <ButtonLink href="/profile">
-                Save changes <Icon name="check" className="h-4 w-4" />
-              </ButtonLink>
-            </div>
-          </form>
+          </div>
         </section>
+
+        {/* Stats */}
+        <section className="grid gap-4 sm:grid-cols-4">
+          {[
+            { label: "Total Trips", value: trips.length.toString(), icon: "trips" as const },
+            { label: "Cities Visited", value: totalCities.toString(), icon: "search" as const },
+            { label: "Completed", value: completedTrips.length.toString(), icon: "check" as const },
+            { label: "Upcoming", value: upcomingTrips.length.toString(), icon: "calendar" as const },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-sky-100 bg-white p-4 shadow-sm shadow-sky-100"
+            >
+              <div className="flex items-center gap-3">
+                <span className="grid h-9 w-9 place-items-center rounded-lg bg-sky-50 text-sky-600">
+                  <Icon name={stat.icon} className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="text-xl font-black text-slate-950">{stat.value}</p>
+                  <p className="text-xs text-slate-500">{stat.label}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </section>
+
+        {/* Upcoming Trips */}
+        <div className="flex items-center gap-3">
+          <h2 className="shrink-0 text-xl font-black text-slate-950">
+            Upcoming Trips
+          </h2>
+          <span className="h-px flex-1 bg-sky-100" />
+        </div>
+        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {upcomingTrips.map((trip) => {
+            const progress = Math.round((trip.spent / trip.budget) * 100);
+            return (
+              <Link
+                key={trip.id}
+                href={`/trips/${trip.id}`}
+                className="lift-card overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5"
+              >
+                <div className="relative h-36">
+                  <Image
+                    src={trip.image}
+                    alt={trip.name}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 to-transparent" />
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <h3 className="font-black text-white">{trip.name}</h3>
+                    <p className="text-xs text-sky-100">{trip.dates}</p>
+                  </div>
+                </div>
+                <div className="space-y-3 p-4">
+                  <div className="flex flex-wrap gap-1.5">
+                    {trip.cities.map((city) => (
+                      <span
+                        key={city}
+                        className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-semibold text-sky-600"
+                      >
+                        {city}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>{formatCurrency(trip.spent)} spent</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <ProgressBar value={progress} />
+                </div>
+              </Link>
+            );
+          })}
+        </section>
+
+        {/* Completed Trips */}
+        {completedTrips.length > 0 && (
+          <>
+            <div className="flex items-center gap-3">
+              <h2 className="shrink-0 text-xl font-black text-slate-950">
+                Completed Trips
+              </h2>
+              <span className="h-px flex-1 bg-sky-100" />
+            </div>
+            <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {completedTrips.map((trip) => (
+                <Link
+                  key={trip.id}
+                  href={`/trips/${trip.id}`}
+                  className="lift-card overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5"
+                >
+                  <div className="relative h-36">
+                    <Image
+                      src={trip.image}
+                      alt={trip.name}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-slate-950/20" />
+                    <div className="absolute left-3 top-3">
+                      <span className="rounded-full bg-slate-900/60 px-2.5 py-0.5 text-xs font-bold text-white backdrop-blur">
+                        Completed ✓
+                      </span>
+                    </div>
+                    <div className="absolute bottom-3 left-3 right-3">
+                      <h3 className="font-black text-white">{trip.name}</h3>
+                      <p className="text-xs text-sky-100">{trip.dates}</p>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {trip.cities.map((city) => (
+                        <span
+                          key={city}
+                          className="rounded-full bg-sky-50 px-2.5 py-0.5 text-xs font-semibold text-sky-600"
+                        >
+                          {city}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </section>
+          </>
+        )}
       </div>
     </AppShell>
   );

@@ -77,13 +77,13 @@ export function ButtonLink({
 }) {
   const classes =
     variant === "primary"
-      ? "bg-indigo-500 text-white shadow-lg shadow-indigo-950/30 hover:bg-indigo-400"
-      : "border border-slate-700 bg-slate-900/70 text-slate-100 hover:border-indigo-400";
+      ? "bg-[#ff5a3d] text-white shadow-lg shadow-orange-200 hover:bg-[#f04a2d]"
+      : "border border-sky-100 bg-white text-sky-700 shadow-sm shadow-sky-100 hover:border-sky-300 hover:bg-sky-50";
 
   return (
     <Link
       href={href}
-      className={`inline-flex h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition hover:scale-[1.02] ${classes}`}
+      className={`inline-flex h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-bold transition hover:scale-[1.02] ${classes}`}
     >
       {children}
     </Link>
@@ -104,13 +104,13 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
       <div className="max-w-3xl">
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-amber-300">
+        <p className="text-xs font-bold uppercase tracking-[0.24em] text-[#ff5a3d]">
           {eyebrow}
         </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-950 md:text-5xl">
           {title}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-slate-300 md:text-base">
+        <p className="mt-3 text-sm leading-6 text-slate-600 md:text-base">
           {description}
         </p>
       </div>
@@ -129,30 +129,30 @@ export function StatCard({
   tone?: "indigo" | "amber" | "emerald" | "rose";
 }) {
   const tones = {
-    indigo: "from-indigo-400/20 text-indigo-200",
-    amber: "from-amber-400/20 text-amber-200",
-    emerald: "from-emerald-400/20 text-emerald-200",
-    rose: "from-rose-400/20 text-rose-200",
+    indigo: "from-sky-100 text-sky-600",
+    amber: "from-amber-100 text-amber-600",
+    emerald: "from-emerald-100 text-emerald-600",
+    rose: "from-rose-100 text-rose-600",
   };
 
   return (
-    <article className="lift-card rounded-2xl border border-slate-700/70 bg-gradient-to-br to-slate-950/80 p-5 shadow-xl shadow-slate-950/20">
+    <article className="lift-card rounded-2xl border border-sky-100 bg-gradient-to-br to-white p-5 shadow-xl shadow-sky-900/5">
       <div
         className={`mb-5 inline-flex rounded-xl bg-gradient-to-br ${tones[tone]} to-transparent p-3`}
       >
         <Icon name="budget" />
       </div>
-      <p className="text-2xl font-semibold text-white">{value}</p>
-      <p className="mt-1 text-sm text-slate-400">{label}</p>
+      <p className="text-2xl font-bold text-slate-950">{value}</p>
+      <p className="mt-1 text-sm text-slate-500">{label}</p>
     </article>
   );
 }
 
 export function ProgressBar({ value }: { value: number }) {
   return (
-    <div className="h-2 overflow-hidden rounded-full bg-slate-800">
+    <div className="h-2 overflow-hidden rounded-full bg-sky-100">
       <div
-        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 to-indigo-400"
+        className="h-full rounded-full bg-gradient-to-r from-emerald-400 via-amber-400 to-sky-500"
         style={{ width: `${Math.min(value, 100)}%` }}
       />
     </div>
@@ -163,7 +163,7 @@ export function TripCard({ trip }: { trip: Trip }) {
   const progress = Math.round((trip.spent / trip.budget) * 100);
 
   return (
-    <article className="lift-card overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900/80">
+    <article className="lift-card overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5">
       <div className="relative aspect-[16/10]">
         <Image
           src={trip.image}
@@ -173,37 +173,37 @@ export function TripCard({ trip }: { trip: Trip }) {
           sizes="(max-width: 768px) 100vw, 360px"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/10 to-transparent" />
-        <div className="absolute left-4 top-4 rounded-full border border-white/20 bg-slate-950/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+        <div className="absolute left-4 top-4 rounded-full border border-white/30 bg-white/85 px-3 py-1 text-xs font-bold text-sky-700 backdrop-blur">
           {trip.status}
         </div>
       </div>
       <div className="space-y-4 p-5">
         <div>
-          <h3 className="text-lg font-semibold text-white">{trip.name}</h3>
-          <p className="mt-1 text-sm text-slate-400">{trip.dates}</p>
+          <h3 className="text-lg font-bold text-slate-950">{trip.name}</h3>
+          <p className="mt-1 text-sm text-slate-500">{trip.dates}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {trip.cities.map((city) => (
             <span
               key={city}
-              className="rounded-full border border-slate-700 bg-slate-950/60 px-3 py-1 text-xs text-slate-300"
+              className="rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs text-slate-600"
             >
               {city}
             </span>
           ))}
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500">
             <span>Budget used</span>
             <span>{progress}%</span>
           </div>
           <ProgressBar value={progress} />
         </div>
         <div className="flex items-center justify-between text-sm">
-          <span className="text-slate-400">{trip.stops.length || trip.cities.length} cities</span>
+          <span className="text-slate-500">{trip.stops.length || trip.cities.length} cities</span>
           <Link
             href={`/trips/${trip.id}`}
-            className="inline-flex items-center gap-1 font-semibold text-indigo-300 hover:text-indigo-200"
+            className="inline-flex items-center gap-1 font-bold text-sky-600 hover:text-sky-500"
           >
             Open <Icon name="arrow" className="h-4 w-4" />
           </Link>
@@ -219,7 +219,7 @@ export function DestinationCard({
   destination: Destination;
 }) {
   return (
-    <article className="lift-card min-w-[260px] overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900/80">
+    <article className="lift-card min-w-[260px] overflow-hidden rounded-2xl border border-sky-100 bg-white shadow-xl shadow-sky-900/5">
       <div className="relative h-44">
         <Image
           src={destination.image}
@@ -234,7 +234,7 @@ export function DestinationCard({
           <h3 className="mt-1 text-xl font-semibold text-white">
             {destination.city}
           </h3>
-          <p className="text-sm text-slate-300">
+          <p className="text-sm text-sky-50">
             {destination.flag} / {destination.country}
           </p>
         </div>
@@ -242,11 +242,11 @@ export function DestinationCard({
       <div className="grid grid-cols-2 gap-3 p-4 text-sm">
         <div>
           <p className="text-slate-500">Cost index</p>
-          <p className="font-semibold text-white">{destination.costIndex}/100</p>
+          <p className="font-bold text-slate-950">{destination.costIndex}/100</p>
         </div>
         <div>
           <p className="text-slate-500">Popularity</p>
-          <p className="font-semibold text-white">{destination.popularity}%</p>
+          <p className="font-bold text-slate-950">{destination.popularity}%</p>
         </div>
       </div>
     </article>
@@ -260,12 +260,12 @@ export function SearchToolbar({
 }) {
   return (
     <div className="surface-panel grid gap-3 rounded-2xl p-3 md:grid-cols-[1fr_auto_auto_auto]">
-      <label className="flex h-12 items-center gap-3 rounded-xl border border-slate-700 bg-slate-950/70 px-4 text-sm text-slate-400">
+      <label className="flex h-12 items-center gap-3 rounded-xl border border-sky-100 bg-white px-4 text-sm text-slate-500">
         <Icon name="search" className="h-4 w-4" />
         <input
           aria-label={placeholder}
           placeholder={placeholder}
-          className="w-full bg-transparent text-slate-100 placeholder:text-slate-500 focus:outline-none"
+          className="w-full bg-transparent text-slate-900 placeholder:text-slate-500 focus:outline-none"
         />
       </label>
       {["All status", "Newest", "Grid view"].map((item) => (
@@ -273,7 +273,7 @@ export function SearchToolbar({
           key={item}
           type="button"
           aria-label={item}
-          className="h-12 rounded-xl border border-slate-700 bg-slate-950/70 px-4 text-sm font-medium text-slate-200 transition hover:border-indigo-400"
+          className="h-12 rounded-xl border border-sky-100 bg-white px-4 text-sm font-semibold text-slate-600 transition hover:border-sky-300"
         >
           {item}
         </button>
@@ -293,11 +293,11 @@ export function EmptyState({
 }) {
   return (
     <div className="surface-panel rounded-2xl p-8 text-center">
-      <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-indigo-400/30 bg-indigo-400/10 text-indigo-200">
+      <div className="mx-auto mb-5 grid h-16 w-16 place-items-center rounded-2xl border border-sky-200 bg-sky-50 text-sky-600">
         <Icon name="plus" />
       </div>
-      <h3 className="text-lg font-semibold text-white">{title}</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-400">
+      <h3 className="text-lg font-bold text-slate-950">{title}</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
         {body}
       </p>
       <div className="mt-6">{action}</div>
@@ -307,9 +307,9 @@ export function EmptyState({
 
 export function BudgetPill({ trip }: { trip: Trip }) {
   return (
-    <div className="rounded-2xl border border-slate-700 bg-slate-950/70 p-4">
+    <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4">
       <p className="text-xs text-slate-500">Trip budget</p>
-      <p className="mt-1 text-xl font-semibold text-white">
+      <p className="mt-1 text-xl font-bold text-slate-950">
         {formatCurrency(trip.spent)} / {formatCurrency(trip.budget)}
       </p>
       <div className="mt-3">

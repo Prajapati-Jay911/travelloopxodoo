@@ -308,7 +308,7 @@ export const communityTrips: CommunityTrip[] = [
 ];
 
 export const budgetCategories = [
-  { label: "Transport", value: 1120, color: "bg-indigo-400" },
+  { label: "Transport", value: 1120, color: "bg-sky-400" },
   { label: "Stay", value: 1850, color: "bg-amber-400" },
   { label: "Meals", value: 720, color: "bg-emerald-400" },
   { label: "Activities", value: 940, color: "bg-sky-400" },

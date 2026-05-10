@@ -13,17 +13,17 @@ export default async function SharePage({
   const stops = trip.stops.length ? trip.stops : getTrip("europe-loop").stops;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_32%),linear-gradient(180deg,#0f172a,#020617)]">
-      <header className="sticky top-0 z-20 border-b border-slate-800 bg-slate-950/75 backdrop-blur-xl">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_48%,#fff7ed_100%)]">
+      <header className="sticky top-0 z-20 border-b border-sky-100 bg-white/75 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-indigo-500 font-bold text-white">
+            <span className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-500 font-bold text-white">
               T
             </span>
-            <span className="font-semibold text-white">Traveloop</span>
+            <span className="font-bold text-slate-950">Traveloop</span>
           </Link>
           <div className="flex items-center gap-3">
-            <button type="button" aria-label="Copy public link" className="hidden h-10 rounded-xl border border-slate-700 px-4 text-sm font-semibold text-slate-200 sm:block">
+            <button type="button" aria-label="Copy public link" className="hidden h-10 rounded-xl border border-sky-100 px-4 text-sm font-semibold text-slate-700 sm:block">
               Copy link
             </button>
             <ButtonLink href="/login">
@@ -34,7 +34,7 @@ export default async function SharePage({
       </header>
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 md:px-8">
-        <section className="relative overflow-hidden rounded-3xl border border-slate-800">
+        <section className="relative overflow-hidden rounded-3xl border border-sky-100">
           <div className="relative h-[460px]">
             <Image
               src={trip.image}
@@ -53,7 +53,7 @@ export default async function SharePage({
             <h1 className="mt-3 text-4xl font-semibold text-white md:text-6xl">
               {trip.name}
             </h1>
-            <p className="mt-3 text-slate-200">
+            <p className="mt-3 text-sky-50">
               {trip.dates} / {trip.cities.length} cities / {formatCurrency(trip.spent)} estimated spend
             </p>
           </div>
@@ -63,19 +63,19 @@ export default async function SharePage({
           {stops.map((stop, index) => (
             <article key={stop.id} className="surface-panel rounded-3xl p-5 md:p-6">
               <div className="flex gap-4">
-                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-indigo-500 font-semibold text-white">
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sky-500 font-semibold text-white">
                   {index + 1}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-semibold text-white">
+                  <h2 className="text-2xl font-bold text-slate-950">
                     {stop.city}, {stop.country}
                   </h2>
-                  <p className="mt-1 text-sm text-slate-400">{stop.dates}</p>
+                  <p className="mt-1 text-sm text-slate-500">{stop.dates}</p>
                   <div className="mt-5 grid gap-3 md:grid-cols-3">
                     {stop.activities.map((activity) => (
-                      <div key={activity.id} className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
-                        <p className="font-semibold text-white">{activity.name}</p>
-                        <p className="mt-1 text-sm text-slate-400">
+                      <div key={activity.id} className="rounded-2xl border border-sky-100 bg-white p-4">
+                        <p className="font-bold text-slate-950">{activity.name}</p>
+                        <p className="mt-1 text-sm text-slate-500">
                           {activity.time} / {activity.duration}
                         </p>
                       </div>

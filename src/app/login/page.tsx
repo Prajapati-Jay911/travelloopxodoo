@@ -1,101 +1,123 @@
 import Image from "next/image";
 import Link from "next/link";
+import { TopNav } from "@/components/app-shell";
 import { Icon } from "@/components/ui";
 
 export default function LoginPage() {
   return (
-    <main className="grid min-h-screen bg-slate-950 lg:grid-cols-[1.05fr_0.95fr]">
-      <section className="relative hidden overflow-hidden lg:block">
-        <Image
-          src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1600&q=80"
-          alt="Aerial coastline travel inspiration"
-          fill
-          preload
-          className="object-cover"
-          sizes="50vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent" />
-        <div className="absolute bottom-10 left-10 max-w-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-amber-200">
-            Lisbon / Tokyo / Cape Town
-          </p>
-          <h1 className="mt-4 text-5xl font-semibold tracking-tight text-white">
-            Every stop, cost, note, and memory in one calm workspace.
-          </h1>
-        </div>
-      </section>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f4fbff_0%,#ffffff_48%,#fff7ed_100%)] text-slate-900">
+      <TopNav active="Dashboard" />
 
-      <section className="flex items-center justify-center px-4 py-10">
-        <div className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/80 p-6 shadow-2xl shadow-slate-950/50 md:p-8">
-          <Link href="/" className="mb-8 flex items-center gap-3">
-            <span className="grid h-11 w-11 place-items-center rounded-2xl bg-indigo-500 font-bold text-white">
-              T
-            </span>
-            <span className="text-xl font-semibold text-white">Traveloop</span>
-          </Link>
-          <h2 className="text-3xl font-semibold tracking-tight text-white">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-slate-400">
-            Sign in to continue planning your itineraries, budgets, and shared trip pages.
-          </p>
+      <section className="px-4 py-8 md:px-8 md:py-10">
+        <div className="relative mx-auto grid min-h-[calc(100vh-132px)] max-w-7xl overflow-hidden rounded-[2rem] border border-white bg-white shadow-2xl shadow-sky-900/14 lg:grid-cols-[1.05fr_0.95fr]">
+          <Image
+            src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80"
+            alt="Sunny beach and ocean for travel login"
+            fill
+            preload
+            className="object-cover"
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-900/28 to-white/8" />
 
-          <form className="mt-8 space-y-4">
-            <label className="block text-sm font-medium text-slate-200">
-              Email
-              <input
-                aria-label="Email address"
-                type="email"
-                placeholder="priya@example.com"
-                className="mt-2 h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-slate-100 placeholder:text-slate-600"
-              />
-            </label>
-            <label className="block text-sm font-medium text-slate-200">
-              Password
-              <div className="mt-2 flex h-12 items-center rounded-xl border border-slate-700 bg-slate-950 px-4">
-                <input
-                  aria-label="Password"
-                  type="password"
-                  placeholder="Enter password"
-                  className="w-full bg-transparent text-slate-100 placeholder:text-slate-600 focus:outline-none"
-                />
-                <button
-                  type="button"
-                  aria-label="Show password"
-                  className="text-sm font-semibold text-indigo-300"
-                >
-                  Show
-                </button>
+          <section className="relative z-10 flex min-h-[520px] items-center px-6 py-12 md:px-12 lg:px-16">
+            <div className="max-w-xl text-white">
+              <div className="mb-8 inline-flex items-center gap-3">
+                <span className="grid h-12 w-12 place-items-center rounded-full border border-white/35 bg-white/15 text-white backdrop-blur">
+                  <Icon name="arrow" className="h-5 w-5 -rotate-45" />
+                </span>
+                <span className="text-3xl font-black tracking-tight">
+                  TRAVELOOP
+                </span>
               </div>
-            </label>
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2 text-slate-400">
-                <input type="checkbox" className="h-4 w-4 accent-indigo-500" />
-                Remember me
-              </label>
-              <Link href="/signup" className="font-semibold text-indigo-300">
-                Forgot password?
-              </Link>
+              <p className="text-sm font-bold uppercase tracking-[0.28em] text-sky-100">
+                Travel
+              </p>
+              <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight md:text-7xl">
+                Explore Horizons
+              </h1>
+              <p className="mt-7 max-w-md text-xl font-semibold leading-8 text-white">
+                Where your dream destinations become easy plans.
+              </p>
+              <p className="mt-4 max-w-md text-sm leading-6 text-sky-50">
+                Build trips, budgets, packing lists, notes, and shared pages in
+                one bright travel workspace.
+              </p>
             </div>
-            <button
-              type="button"
-              className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-indigo-500 font-semibold text-white transition hover:scale-[1.02] hover:bg-indigo-400"
-            >
-              Login <Icon name="arrow" className="h-4 w-4" />
-            </button>
-            <button
-              type="button"
-              className="h-12 w-full rounded-xl border border-slate-700 bg-slate-950 font-semibold text-slate-100 transition hover:border-indigo-400"
-            >
-              Continue with Google
-            </button>
-          </form>
-          <p className="mt-6 text-center text-sm text-slate-400">
-            New here?{" "}
-            <Link href="/signup" className="font-semibold text-indigo-300">
-              Create an account
-            </Link>
-          </p>
+          </section>
+
+          <section className="relative z-10 flex items-center justify-center px-4 py-8 md:px-10">
+            <div className="w-full max-w-lg rounded-[1.75rem] border border-white/70 bg-white/78 p-6 shadow-2xl shadow-slate-900/18 backdrop-blur-2xl md:p-9">
+              <div className="mx-auto mb-7 grid h-24 w-24 place-items-center rounded-full border border-sky-100 bg-white shadow-lg shadow-sky-100">
+                <Icon name="profile" className="h-10 w-10 text-sky-500" />
+              </div>
+
+              <form className="space-y-5">
+                <label className="block text-sm font-bold text-slate-700">
+                  Username
+                  <input
+                    aria-label="Username"
+                    type="text"
+                    placeholder="Enter username"
+                    className="mt-2 h-13 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                  />
+                </label>
+
+                <label className="block text-sm font-bold text-slate-700">
+                  Password
+                  <input
+                    aria-label="Password"
+                    type="password"
+                    placeholder="Enter password"
+                    className="mt-2 h-13 w-full rounded-xl border border-sky-100 bg-white px-4 text-slate-900 shadow-sm shadow-sky-100 placeholder:text-slate-500"
+                  />
+                </label>
+
+                <div className="flex items-center justify-between text-sm">
+                  <label className="flex items-center gap-2 font-medium text-slate-600">
+                    <input type="checkbox" className="h-4 w-4 accent-sky-500" />
+                    Remember me
+                  </label>
+                  <Link href="/signup" className="font-bold text-sky-600">
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <Link
+                  href="/"
+                  className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#ff5a3d] text-sm font-black uppercase tracking-wide text-white shadow-lg shadow-orange-200 transition hover:bg-[#f04a2d]"
+                >
+                  Login <Icon name="arrow" className="h-4 w-4" />
+                </Link>
+              </form>
+
+              <div className="my-7 flex items-center gap-4 text-sm font-semibold text-slate-500">
+                <span className="h-px flex-1 bg-sky-100" />
+                or
+                <span className="h-px flex-1 bg-sky-100" />
+              </div>
+
+              <button
+                type="button"
+                className="flex h-13 w-full items-center justify-center gap-3 rounded-xl border border-sky-100 bg-white text-sm font-bold text-slate-700 shadow-sm shadow-sky-100"
+              >
+                <span className="text-lg font-black text-[#4285f4]">G</span>
+                Sign in with Google
+              </button>
+
+              <div className="mt-7 border-t border-sky-100 pt-6 text-center">
+                <p className="text-sm font-medium text-slate-600">
+                  Are you new?
+                </p>
+                <Link
+                  href="/signup"
+                  className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-xl border border-sky-100 bg-sky-50 text-sm font-black uppercase tracking-wide text-sky-700 transition hover:border-sky-300 hover:bg-white"
+                >
+                  Registration
+                </Link>
+              </div>
+            </div>
+          </section>
         </div>
       </section>
     </main>

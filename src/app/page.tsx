@@ -548,7 +548,11 @@ export default function PremiumDashboard() {
           <div className="overflow-hidden" ref={destRef}>
             <div className="flex gap-6 pb-8 pt-2" style={{ touchAction: "pan-y" }}>
               {destinations.slice(0, 6).map((dest) => (
-                <div key={dest.id} className="min-w-[280px] max-w-[320px] flex-[0_0_100%] md:flex-[0_0_40%] lg:flex-[0_0_25%]">
+                <Link 
+                  key={dest.id} 
+                  href={`/explore?q=${encodeURIComponent(dest.name)}`}
+                  className="min-w-[280px] max-w-[320px] flex-[0_0_100%] md:flex-[0_0_40%] lg:flex-[0_0_25%]"
+                >
                   <motion.div
                     whileHover={{ y: -8, scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -583,7 +587,7 @@ export default function PremiumDashboard() {
                       </div>
                     </div>
                   </motion.div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>
@@ -606,56 +610,61 @@ export default function PremiumDashboard() {
                 const progress = Math.round((spent / budget) * 100);
                 const cover = tripCover(trip) || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80";
                 return (
-                  <motion.div
+                  <Link
                     key={trip.id}
-                    whileHover={{ x: 8 }}
-                    className="group flex flex-col sm:flex-row gap-6 rounded-3xl border border-sky-100 bg-white p-4 shadow-xl shadow-sky-900/5 backdrop-blur-sm transition-colors hover:bg-sky-50"
+                    href={`/trips/${trip.id}`}
+                    className="block"
                   >
-                    <div className="relative h-48 w-full sm:w-64 shrink-0 overflow-hidden rounded-2xl">
-                      <Image
-                        src={cover}
-                        alt={trip.name}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                        sizes="(max-width: 640px) 100vw, 256px"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col justify-between py-2">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-2xl font-black text-slate-900">{trip.name}</h3>
-                          <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-600">
-                            {(trip.stopCount ?? 0) > 0 ? "Active" : "Draft"}
-                          </span>
-                        </div>
-                        <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
-                          <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-sky-500" /> {formatDateRange(trip.startDate, trip.endDate)}
+                    <motion.div
+                      whileHover={{ x: 8 }}
+                      className="group flex flex-col sm:flex-row gap-6 rounded-3xl border border-sky-100 bg-white p-4 shadow-xl shadow-sky-900/5 backdrop-blur-sm transition-colors hover:bg-sky-50"
+                    >
+                      <div className="relative h-48 w-full sm:w-64 shrink-0 overflow-hidden rounded-2xl">
+                        <Image
+                          src={cover}
+                          alt={trip.name}
+                          fill
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          sizes="(max-width: 640px) 100vw, 256px"
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col justify-between py-2">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-2xl font-black text-slate-900">{trip.name}</h3>
+                            <span className="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-xs font-bold text-sky-600">
+                              {(trip.stopCount ?? 0) > 0 ? "Active" : "Draft"}
+                            </span>
                           </div>
-                          <div className="flex items-center gap-1.5">
-                            <Users className="h-4 w-4 text-sky-500" /> {trip.stopCount ?? 0} Cities
+                          <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
+                            <div className="flex items-center gap-1.5">
+                              <Calendar className="h-4 w-4 text-sky-500" /> {formatDateRange(trip.startDate, trip.endDate)}
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                              <Users className="h-4 w-4 text-sky-500" /> {trip.stopCount ?? 0} Cities
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-6">
+                          <div className="mb-2 flex items-center justify-between text-sm">
+                            <span className="text-slate-500">Budget Planner</span>
+                            <span className="font-bold text-slate-900">
+                              {formatMoney(spent)} / {formatMoney(budget)}
+                            </span>
+                          </div>
+                          <div className="h-2 w-full overflow-hidden rounded-full bg-sky-100">
+                            <motion.div 
+                              initial={{ width: 0 }}
+                              whileInView={{ width: `${progress}%` }}
+                              transition={{ duration: 1, ease: "easeOut" }}
+                              className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
+                            />
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="mt-6">
-                        <div className="mb-2 flex items-center justify-between text-sm">
-                          <span className="text-slate-500">Budget Planner</span>
-                          <span className="font-bold text-slate-900">
-                            {formatMoney(spent)} / {formatMoney(budget)}
-                          </span>
-                        </div>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-sky-100">
-                          <motion.div 
-                            initial={{ width: 0 }}
-                            whileInView={{ width: `${progress}%` }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                            className="h-full rounded-full bg-gradient-to-r from-sky-400 to-blue-500"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
+                    </motion.div>
+                  </Link>
                 );
               })}
             </div>

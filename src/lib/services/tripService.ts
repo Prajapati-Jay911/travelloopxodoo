@@ -1,0 +1,437 @@
+import { Prisma } from "@prisma/client";
+import { randomUUID } from "crypto";
+import { forbidden, notFound } from "@/lib/errors";
+import { prisma } from "@/lib/prisma";
+import { communityUserSelect } from "@/lib/services/userSelect";
+import type {
+  CommunityQuery,
+  CreateTripInput,
+  TripListQuery,
+  UpdateTripInput,
+} from "@/lib/schemas/trip";
+
+const fullTripInclude = {
+  stops: {
+    orderBy: { order: "asc" },
+    include: {
+      city: true,
+      activities: { orderBy: { createdAt: "asc" } },
+    },
+  },
+  budget: true,
+  _count: {
+    select: {
+      checklist: true,
+      notes: true,
+    },
+  },
+} satisfies Prisma.TripInclude;
+
+function tripStatusWhere(status?: TripListQuery["status"]): Prisma.TripWhereInput {
+  const now = new Date();
+
+  if (status === "upcoming") {
+    return { startDate: { gt: now } };
+  }
+
+  if (status === "past") {
+    return { endDate: { lt: now } };
+  }
+
+  if (status === "draft") {
+    return { stops: { none: {} } };
+  }
+
+  return {};
+}
+
+function withTotalCost<T extends { stops: { activities: { cost: number }[] }[] }>(trip: T) {
+  const totalCost = trip.stops.reduce(
+    (sum, stop) =>
+      sum + stop.activities.reduce((activitySum, activity) => activitySum + activity.cost, 0),
+    0,
+  );
+
+  return { ...trip, totalCost };
+}
+
+async function assertOwnsTrip(userId: string, tripId: string) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    select: { userId: true },
+  });
+
+  if (!trip) {
+    throw notFound("Trip not found", "TRIP_NOT_FOUND");
+  }
+
+  if (trip.userId !== userId) {
+    throw forbidden();
+  }
+}
+
+export async function listTrips(userId: string, query: TripListQuery) {
+  const where: Prisma.TripWhereInput = {
+    userId,
+    ...tripStatusWhere(query.status),
+    ...(query.q ? { name: { contains: query.q, mode: "insensitive" } } : {}),
+  };
+
+  const orderBy: Prisma.TripOrderByWithRelationInput =
+    query.sortBy === "oldest" ? { createdAt: "asc" } : { createdAt: "desc" };
+
+  const [total, trips] = await prisma.$transaction([
+    prisma.trip.count({ where }),
+    prisma.trip.findMany({
+      where,
+      orderBy,
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      include: {
+        budget: true,
+        stops: {
+          select: {
+            id: true,
+            activities: { select: { cost: true } },
+          },
+        },
+        _count: { select: { stops: true } },
+      },
+    }),
+  ]);
+
+  const data = trips
+    .map((trip) => ({
+      ...trip,
+      stopCount: trip._count.stops,
+      totalCost: trip.stops.reduce(
+        (sum, stop) =>
+          sum + stop.activities.reduce((activitySum, activity) => activitySum + activity.cost, 0),
+        0,
+      ),
+      stops: undefined,
+      _count: undefined,
+    }))
+    .sort((a, b) =>
+      query.sortBy === "budget" ? (b.totalCost ?? 0) - (a.totalCost ?? 0) : 0,
+    );
+
+  return {
+    data,
+    pagination: {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.ceil(total / query.limit),
+    },
+  };
+}
+
+export async function createTrip(userId: string, input: CreateTripInput) {
+  return prisma.trip.create({
+    data: {
+      ...input,
+      userId,
+      shareToken: input.isPublic ? randomUUID() : undefined,
+      budget: { create: {} },
+    },
+    include: fullTripInclude,
+  });
+}
+
+export async function getTrip(userId: string, tripId: string) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+    include: fullTripInclude,
+  });
+
+  if (!trip) {
+    throw notFound("Trip not found", "TRIP_NOT_FOUND");
+  }
+
+  if (trip.userId !== userId) {
+    throw forbidden();
+  }
+
+  return withTotalCost(trip);
+}
+
+export async function updateTrip(userId: string, tripId: string, input: UpdateTripInput) {
+  await assertOwnsTrip(userId, tripId);
+
+  const data: Prisma.TripUpdateInput = {
+    ...input,
+    shareToken:
+      input.isPublic === true
+        ? randomUUID()
+        : input.isPublic === false
+          ? null
+          : undefined,
+  };
+
+  const trip = await prisma.trip.update({
+    where: { id: tripId },
+    data,
+    include: fullTripInclude,
+  });
+
+  return withTotalCost(trip);
+}
+
+export async function deleteTrip(userId: string, tripId: string) {
+  await assertOwnsTrip(userId, tripId);
+  await prisma.trip.delete({ where: { id: tripId } });
+  return { deleted: true };
+}
+
+export async function shareTrip(userId: string, tripId: string, requestUrl: string) {
+  await assertOwnsTrip(userId, tripId);
+
+  const shareToken = randomUUID();
+  const trip = await prisma.trip.update({
+    where: { id: tripId },
+    data: { isPublic: true, shareToken },
+    select: { id: true, shareToken: true },
+  });
+
+  const baseUrl = process.env.FRONTEND_URL ?? new URL(requestUrl).origin;
+
+  return {
+    tripId: trip.id,
+    shareToken: trip.shareToken,
+    shareUrl: `${baseUrl.replace(/\/$/, "")}/share/${trip.shareToken}`,
+  };
+}
+
+export async function revokeShare(userId: string, tripId: string) {
+  await assertOwnsTrip(userId, tripId);
+  await prisma.trip.update({
+    where: { id: tripId },
+    data: { isPublic: false, shareToken: null },
+  });
+
+  return { revoked: true };
+}
+
+export async function getSharedTrip(token: string) {
+  const trip = await prisma.trip.findFirst({
+    where: { shareToken: token, isPublic: true },
+    include: {
+      ...fullTripInclude,
+      user: { select: communityUserSelect },
+    },
+  });
+
+  if (!trip) {
+    throw notFound("Shared itinerary not found", "SHARE_NOT_FOUND");
+  }
+
+  return withTotalCost(trip);
+}
+
+export async function listCommunityTrips(query: CommunityQuery) {
+  const where: Prisma.TripWhereInput = {
+    isPublic: true,
+    shareToken: { not: null },
+    ...(query.q ? { name: { contains: query.q, mode: "insensitive" } } : {}),
+    ...(query.city
+      ? {
+          stops: {
+            some: {
+              city: {
+                OR: [
+                  { name: { contains: query.city, mode: "insensitive" } },
+                  { country: { contains: query.city, mode: "insensitive" } },
+                ],
+              },
+            },
+          },
+        }
+      : {}),
+  };
+
+  const [total, trips] = await prisma.$transaction([
+    prisma.trip.count({ where }),
+    prisma.trip.findMany({
+      where,
+      orderBy:
+        query.sortBy === "popular"
+          ? [{ stops: { _count: "desc" } }, { createdAt: "desc" }]
+          : { createdAt: "desc" },
+      skip: (query.page - 1) * query.limit,
+      take: query.limit,
+      include: {
+        user: { select: communityUserSelect },
+        stops: {
+          orderBy: { order: "asc" },
+          include: { city: true, activities: { select: { cost: true } } },
+        },
+        _count: { select: { stops: true, notes: true } },
+      },
+    }),
+  ]);
+
+  return {
+    data: trips.map(withTotalCost),
+    pagination: {
+      page: query.page,
+      limit: query.limit,
+      total,
+      totalPages: Math.ceil(total / query.limit),
+    },
+  };
+}
+
+export async function copyPublicTrip(userId: string, tripId: string) {
+  const source = await prisma.trip.findFirst({
+    where: { id: tripId, isPublic: true },
+    include: {
+      stops: { include: { activities: true } },
+      budget: true,
+      checklist: true,
+      notes: true,
+    },
+  });
+
+  if (!source) {
+    throw notFound("Public trip not found", "PUBLIC_TRIP_NOT_FOUND");
+  }
+
+  const copiedTripId = await prisma.$transaction(async (tx) => {
+    const trip = await tx.trip.create({
+      data: {
+        name: `${source.name} Copy`,
+        description: source.description,
+        coverPhoto: source.coverPhoto,
+        startDate: source.startDate,
+        endDate: source.endDate,
+        isPublic: false,
+        userId,
+        budget: source.budget
+          ? {
+              create: {
+                transport: source.budget.transport,
+                stay: source.budget.stay,
+                meals: source.budget.meals,
+                activities: source.budget.activities,
+                misc: source.budget.misc,
+                totalAllocated: source.budget.totalAllocated,
+              },
+            }
+          : { create: {} },
+      },
+    });
+
+    const stopIdMap = new Map<string, string>();
+
+    for (const stop of source.stops) {
+      const newStop = await tx.stop.create({
+        data: {
+          tripId: trip.id,
+          cityId: stop.cityId,
+          startDate: stop.startDate,
+          endDate: stop.endDate,
+          order: stop.order,
+        },
+      });
+
+      stopIdMap.set(stop.id, newStop.id);
+
+      if (stop.activities.length > 0) {
+        await tx.activity.createMany({
+          data: stop.activities.map((activity) => ({
+            stopId: newStop.id,
+            name: activity.name,
+            type: activity.type,
+            cost: activity.cost,
+            duration: activity.duration,
+            description: activity.description,
+            imageUrl: activity.imageUrl,
+            startTime: activity.startTime,
+          })),
+        });
+      }
+    }
+
+    if (source.checklist.length > 0) {
+      await tx.checklistItem.createMany({
+        data: source.checklist.map((item) => ({
+          tripId: trip.id,
+          name: item.name,
+          category: item.category,
+          isPacked: false,
+        })),
+      });
+    }
+
+    if (source.notes.length > 0) {
+      await tx.note.createMany({
+        data: source.notes.map((note) => ({
+          tripId: trip.id,
+          stopId: note.stopId ? (stopIdMap.get(note.stopId) ?? null) : null,
+          userId,
+          title: note.title,
+          content: note.content,
+        })),
+      });
+    }
+
+    return trip.id;
+  });
+
+  return getTrip(userId, copiedTripId);
+}
+
+export async function getAdminStats() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [totalUsers, totalTrips, tripsCreatedToday, topCities] = await prisma.$transaction([
+    prisma.user.count(),
+    prisma.trip.count(),
+    prisma.trip.count({ where: { createdAt: { gte: today } } }),
+    prisma.city.findMany({
+      take: 10,
+      orderBy: { stops: { _count: "desc" } },
+      select: {
+        id: true,
+        name: true,
+        country: true,
+        flag: true,
+        _count: { select: { stops: true } },
+      },
+    }),
+  ]);
+
+  return { totalUsers, totalTrips, tripsCreatedToday, topCities };
+}
+
+export async function listAdminUsers(page = 1, limit = 20) {
+  const [total, data] = await prisma.$transaction([
+    prisma.user.count(),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        createdAt: true,
+        _count: { select: { trips: true } },
+      },
+    }),
+  ]);
+
+  return {
+    data,
+    pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  };
+}
+
+export async function deleteUserByAdmin(userId: string) {
+  await prisma.user.delete({ where: { id: userId } });
+  return { deleted: true };
+}
